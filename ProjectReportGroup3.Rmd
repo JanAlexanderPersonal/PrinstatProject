@@ -1,0 +1,61 @@
+---
+title: "Project Report G9"
+author: "Jan Alexander, Paul Morbée, Joren Verbeke, Steven Wallaert"
+date: "11-11-2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, echo=FALSE, include=FALSE}
+packages <- c('coin','ggplot2', 'reshape2', 'dplyr')
+# install.packages(packages)
+lapply(packages, library, character.only = TRUE)
+```
+
+# Research question: age evolution
+
+```{r loadDataset, echo=FALSE, include=TRUE}
+filename <- "armpit.txt"
+armpit <- read.table(filename)
+# Step 1: clean the data. We have 5 genders now
+# convert the gender 'F ' to 'F'
+armpit[armpit$Gender == 'F ', 'Gender'] = 'F'
+armpit[armpit$Gender != 'F', 'Gender'] = 'M'
+armpit$Gender <- factor(armpit$Gender)
+# drop the observation where gender and age were not filled out
+armpit <- armpit[!is.na(armpit$Age),]
+```
+```{r join, echo=FALSE}
+# New variable with sum of all Corynebacterium species
+# New variable with sum of all Staphylococcus species
+armpit <- armpit %>% 
+  mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
+  mutate(Staphylococcus.total = rowSums(.[5:8])) 
+
+# New variable: Agecat --> 3 age categories defined
+armpit$Agecat <- cut(x = armpit$Age, 
+                    breaks = c(0, 26, 60, +Inf), 
+                    labels = c("junior", "adult", "senior"), 
+                    ordered_result = T )
+
+AgeEvol <- ggplot(armpit, aes(x = Age)) +
+  geom_line(aes(y = Staphylococcus.total), color = 'blue') +
+  geom_line(aes(y = Corynebacterium.total), color = 'red')
+
+boxplots <- ggplot(armpit, aes(x = Agecat, y=Staphylococcus.total))+
+  geom_boxplot()
+```
+```{r plot1, echo=FALSE}
+AgeEvol
+```
+
+```{r plot2, echo=FALSE}
+boxplots
+```
+
+
+
+

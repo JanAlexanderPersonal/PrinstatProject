@@ -1,8 +1,15 @@
 ---
 title: "Project Report G9"
 author: "Jan Alexander, Paul Morbée, Joren Verbeke, Steven Wallaert"
-date: "11-11-2019"
-output: pdf_document
+date: "2019 - 2020"
+documentclass: article
+geometry: margin = 3.5cm
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -10,12 +17,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r packages, echo=FALSE, include=FALSE}
-packages <- c('coin','ggplot2', 'reshape2', 'dplyr')
+packages <- c('coin','ggplot2', 'reshape2', 'dplyr', 'cowplot', 'gridGraphics')
 # install.packages(packages)
 lapply(packages, library, character.only = TRUE)
 ```
 
-# Research question: age evolution
+# Introduction 
+
+# Methods
+## Analysis protocol
+
+
+
+## Data cleaning and preparation
 
 ```{r loadDataset, echo=FALSE, include=TRUE}
 filename <- "armpit.txt"
@@ -28,6 +42,10 @@ armpit$Gender <- factor(armpit$Gender)
 # drop the observation where gender and age were not filled out
 armpit <- armpit[!is.na(armpit$Age),]
 ```
+
+# Results
+## Correlation between bacteria and age
+
 ```{r join, echo=FALSE}
 # New variable with sum of all Corynebacterium species
 # New variable with sum of all Staphylococcus species
@@ -37,25 +55,33 @@ armpit <- armpit %>%
 
 # New variable: Agecat --> 3 age categories defined
 armpit$Agecat <- cut(x = armpit$Age, 
-                    breaks = c(0, 26, 60, +Inf), 
-                    labels = c("junior", "adult", "senior"), 
+                    breaks = c(0, 30, 40, 50, 60, +Inf), 
+                    labels = c("20 - 29", "30-39", "40 - 49", "50-59", "60 or older"), 
                     ordered_result = T )
 
 AgeEvol <- ggplot(armpit, aes(x = Age)) +
-  geom_line(aes(y = Staphylococcus.total), color = 'blue') +
-  geom_line(aes(y = Corynebacterium.total), color = 'red')
+  geom_point(aes(y = Staphylococcus.total), color = 'blue') +
+  geom_point(aes(y = Corynebacterium.total), color = 'red')
 
-boxplots <- ggplot(armpit, aes(x = Agecat, y=Staphylococcus.total))+
+boxstaph <- ggplot(armpit, aes(x = Agecat, y=Staphylococcus.total ))+
+  geom_boxplot()
+
+boxcor <- ggplot(armpit, aes(x = Agecat, y=Corynebacterium.total ))+
   geom_boxplot()
 ```
 ```{r plot1, echo=FALSE}
-AgeEvol
+plot_grid(AgeEvol + theme(legend.position = 'none'),
+          nrow = 1, ncol = 1, rel_heights = c(0.15, 0.15))
 ```
+
 
 ```{r plot2, echo=FALSE}
-boxplots
+plot_grid(boxstaph +  theme(legend.position = 'none'), 
+          boxcor +  theme(legend.position = 'none'), 
+          nrow = 1, ncol = 2, rel_heights = c(0.15, 0.15))
 ```
 
 
 
+# Conclusion
 

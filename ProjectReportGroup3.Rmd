@@ -31,16 +31,19 @@ lapply(packages, library, character.only = TRUE)
 
 ## Data cleaning and preparation
 
-```{r loadDataset, echo=FALSE, include=TRUE}
+```{r loadDataset, echo=TRUE, include=TRUE}
 filename <- "armpit.txt"
 armpit <- read.table(filename)
-# Step 1: clean the data. We have 5 genders now
-# convert the gender 'F ' to 'F'
-armpit[armpit$Gender == 'F ', 'Gender'] = 'F'
-armpit[armpit$Gender != 'F', 'Gender'] = 'M'
+summary(armpit)
+# Step 1: assure we have correct gender labels
+# convert the gender 'F ' to 'F' and ' M' to 'M'
+armpit[grepl('F', armpit$Gender), 'Gender'] <- 'F'
+armpit[grepl('M', armpit$Gender), 'Gender'] <- 'M'
+# drop the observation where gender and age were not filled out --> TODO : is this acceptable?
+armpit <- armpit[armpit$Gender != '',]
 armpit$Gender <- factor(armpit$Gender)
-# drop the observation where gender and age were not filled out
 armpit <- armpit[!is.na(armpit$Age),]
+summary(armpit)
 ```
 
 # Results

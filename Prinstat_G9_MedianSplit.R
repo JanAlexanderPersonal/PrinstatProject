@@ -14,6 +14,7 @@ lapply(packages, library, character.only = TRUE)
 filename <- "armpit.txt"
 armpit <- read.table(filename)
 summary(armpit)
+str(armpit)
 
 # Step 1: assure we have correct gender labels, now we have 5.
 # convert the gender 'F ' to 'F' and ' M' to 'M'
@@ -25,7 +26,6 @@ armpit$Gender <- factor(armpit$Gender)
 str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
-
 
 # Step 2: Make new variables: total of all Corynebacterium species, total of all Staphylococcus species and total of all bacteria
 armpit <- armpit %>% 
@@ -53,22 +53,25 @@ Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total
        y='Frequency')
 Corynebacterium.totalDist
 
-#Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
-#No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
+# Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
+# No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
 
 kruskal.test(Corynebacterium.total ~ BMI, data = armpit)
 kruskal.test(Corynebacterium.total ~ Gender, data = armpit)
 
-#Part 2 genus composition change with age, strategy 1
+# Part 2 genus composition change with age, strategy 1
 
 #Protocol: a new variable was made with 4 age categories. 
 # A boxplot and summary table was made of the relative abundance of Corynebacterium per age category.
 # Finally, a Kruskal-Wallis test was performed to study if higher values were more likely in certain groups.
 
 # New variable: Agecat --> 4 age categories defined
+
+quantile(armpit$Age, probs = c(0.33, 0.66))
+
 armpit$Agecat <- cut(x = armpit$Age, 
-                     breaks = c(0, 25, 35, 50, +Inf), 
-                     labels = c("under 25", "25-34", "35 - 49", "50 or older"), 
+                     breaks = c(0, 23.5, 37.5, +Inf), 
+                     labels = c("under 24", "24-37", "37 or older"), 
                      ordered_result = T )
 
 # Distributions of the subjects over these age categories
@@ -107,6 +110,7 @@ tablecor
 
 kruskal.test(Corynebacterium.total ~ Agecat, data = armpit)
 
+
 #Part 2 genus composition change with age, strategy 2
 
 #Protocol: a scatterplot with loess curve was made of the relative abundance of Corynebacterium by age. 
@@ -121,6 +125,21 @@ corbyage <- ggplot(armpit, aes(x=Age, y=Corynebacterium.total)) +
        y = 'Relative abundance of Corynebacterium') 
 corbyage
 
+
+BMIage <- ggplot(armpit, aes(x=Age, y=BMI)) + 
+  geom_point()+
+  geom_smooth() + # Ziet er mooi uit, maar is dit ook 'correct' (aanvaardbaar)
+  ggtitle('BMI class vs age') +
+  labs(x = 'Age [years]', 
+       y = 'BMI category') 
+BMIage
+
+BMIcorby <- ggplot(armpit, aes(x=BMI, y=Corynebacterium.total)) + 
+  geom_point()+
+  ggtitle('relative abundance of Corynebacterium vs BMI class') +
+  labs(x = 'BMI class', 
+       y = 'Relative abundance of Corynebacterium') 
+BMIcorby
 
 # What does the correlation function in R actually deliver as an output?
 cor(armpit$Age, armpit$Corynebacterium.total, method = "pearson")

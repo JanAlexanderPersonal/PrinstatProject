@@ -137,3 +137,50 @@ cor.test(armpit$Age, armpit$Corynebacterium.total,
          conf.level = 0.95)
 
 #TBA: (dis)advantages of strategy 1 and 2
+
+# Part 3 relative abundances of the 8 species
+
+#First step: look how many species occur together
+
+armpit$nspecies <-  rowSums(armpit[,c(1:8)]>0)
+summary(armpit)
+
+nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) + 
+  geom_histogram(color = 'black',
+                 fill = 'blue',
+                 bins=7) +
+  ggtitle("Histogram of number of concurrent species") +
+  labs(x='number of species', 
+       y='Frequency')
+nspeciesDist
+
+#In one subject, only 1 species was found.
+
+#Prevalence of each species is shown in the table below
+
+library(tidyr)
+armpit$subjectID <- rownames(armpit)
+long_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4)
+head(long_armpit,50)
+
+tableprevalence <- long_armpit %>%
+  group_by(Species) %>%
+  summarize(n_positive = sum(Abundance>0, na.rm = TRUE),
+            percentage_positive=n_positive/length(Abundance)*100,
+            min_abundance = min(Abundance, na.rm = TRUE),
+            max_abundance = max(Abundance, na.rm = TRUE))
+tableprevalence
+
+#The table below shows the conditional probabilities of detecting a species when another species was detected
+
+mean(armpit$Corynebacterium.1[armpit$Corynebacterium.2>0]>0)
+
+#TBA: how can we do this for each species vs each other species?
+
+#The plot below shows the spearman correlation coefficients
+
+speciescor <- cor(armpit[ ,c(1:8)],method="spearman")
+round(speciescor,2)
+library(corrplot)
+corrplot(speciescor, type = "upper",  
+         tl.col = "black", tl.srt = 45)

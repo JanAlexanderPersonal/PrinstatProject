@@ -184,3 +184,61 @@ round(speciescor,2)
 library(corrplot)
 corrplot(speciescor, type = "upper",  
          tl.col = "black", tl.srt = 45)
+
+
+### steven
+
+# dichotomiseren van Coryne abundance
+armpit <- armpit %>%
+  mutate(Coryne.dichotoom = ifelse(Corynebacterium.total>50, 1, 0))
+
+hist(armpit$Coryne.dichotoom)
+
+
+theme_set(theme_light())
+
+ggplot(armpit,aes(x = Age, y = Corynebacterium.total)) +
+  geom_point() +
+  geom_smooth()
+
+cor.test(armpit$Age, armpit$Corynebacterium.total,
+         alternative = "two.sided",
+         method = "kendall",
+         conf.level = .95)
+
+ggplot(armpit,aes(x = Age, y = Coryne.dichotoom)) +
+  geom_point() +
+  geom_smooth()
+
+# dit is niet OK
+# cor.test(armpit$Age, armpit$Coryne.dichotoom,
+#         alternative = "two.sided",
+#         method = "pearson",
+#         conf.level = .95)
+
+
+
+# install.packages("polycor")
+# library(polycor)
+# Hm, warning: based on the assumption that the joint distribution 
+# of the quantitative variable and a latent continuous variable underlying
+# the ordinal variable is bivariate normal
+# polyserial(armpit$Age, armpit$Coryne.dichotoom)
+
+
+### Discrete
+
+cor.test(as.numeric(armpit$Agecat), armpit$Corynebacterium.total,
+         alternative = "two.sided",
+         method = "kendall",
+         conf.level = .95)
+
+library(tidyverse)
+
+armpit %>%
+  select(Corynebacterium.total, Staphylococcus.total, Agecat) %>%
+  pivot_longer(1:2, names_to = "Bacterium", values_to = "relabundance") %>%
+  ggplot(aes(x = Agecat, y=relabundance, fill=Bacterium)) +
+  geom_col(position = "fill")
+
+

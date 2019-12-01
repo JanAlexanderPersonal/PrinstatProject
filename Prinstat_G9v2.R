@@ -56,8 +56,8 @@ Corynebacterium.totalDist
 #Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
 #No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
 
-kruskal.test(Corynebacterium.total ~ BMI, data = armpit)
-kruskal.test(Corynebacterium.total ~ Gender, data = armpit)
+wilcox.test(Corynebacterium.total ~ BMI, data = armpit)
+wilcox.test(Corynebacterium.total ~ Gender, data = armpit)
 
 #Part 2 genus composition change with age, strategy 1
 
@@ -70,6 +70,40 @@ armpit$Agecat <- cut(x = armpit$Age,
                      breaks = c(0, 25, 35, 50, +Inf), 
                      labels = c("under 25", "25-34", "35 - 49", "50 or older"), 
                      ordered_result = T )
+
+# Tables to investigate the joint dependencies
+tab_BMI_Age <- armpit %>%
+  group_by(BMI, Agecat) %>%
+  summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
+            Observations = n()) 
+tab_Gender_Age <- armpit %>%
+  group_by(Gender, Agecat) %>%
+  summarise(Corynebacterium.AvgAbundance  = mean(Corynebacterium.total), 
+            Observations = n()) 
+
+plot_BMI_Age <- tab_BMI_Age %>%
+  ggplot(aes(x = Agecat, y=Corynebacterium.AvgAbundance , size = Observations, color = BMI)) + 
+  geom_point(alpha = 0.75) + 
+  theme(legend.position = "bottom") +
+  scale_size_continuous(limits = c(1, 10), breaks=c(1, 5, 10))+
+  ylim(0, 60)+
+  ylab('Average relative abundance \n of Corynebacterium genus [%]')+
+  xlab('Age category')+
+  ggtitle('Relative abundance of Corynebacterium \n as a function of age category')
+
+
+plot_Gender_age <- tab_Gender_Age %>%
+  ggplot(aes(x = Agecat, y=Corynebacterium.AvgAbundance , size = Observations, color = Gender)) + 
+  geom_point(alpha = 0.75) + 
+  theme(legend.position = "bottom") +
+  ylim(0, 60)+
+  scale_size_continuous(limits = c(1, 10), breaks=c(1, 5, 10))+
+  ylab('Average relative abundance \n of Corynebacterium genus [%]')+
+  xlab('Age category')+
+  ggtitle('Relative abundance of Corynebacterium \n as a function of age category')
+
+ggsave('plot_BMI_Age.png', plot_BMI_Age, device = png())
+ggsave('plot_Gender_age.png', plot_Gender_age, device = png())
 
 # Distributions of the subjects over these age categories
 AgeCatDist <- ggplot(armpit, aes(x = Agecat)) +

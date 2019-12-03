@@ -30,7 +30,6 @@ str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
 
-
 # Step 2: Make new variables: total of all Corynebacterium species, total of all Staphylococcus species and total of all bacteria
 armpit <- armpit %>% 
   mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
@@ -39,7 +38,6 @@ armpit <- armpit %>%
 summary(armpit)
 
 # Step 3: Distributions of the continious variables
-
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
   geom_histogram(color = 'black',
                  fill = 'blue',
@@ -154,7 +152,7 @@ tablecor <- armpit %>%
             max = max(Corynebacterium.total, na.rm = TRUE),
             n_positive = sum(Corynebacterium.total>0, na.rm = TRUE),
             percentage_positive=n_positive/n*100)
-tablecor
+stargazer(tablecor, summary = FALSE, out='table_cor.tex', align = TRUE, digits = 2)
 
 #Kruskal-Wallis test: test if higher values are more likely in certain groups 
 
@@ -240,7 +238,7 @@ mean(armpit$Corynebacterium.1[armpit$Corynebacterium.2>0]>0)
 
 speciescor <- cor(armpit[ ,c(1:8)],method="spearman")
 round(speciescor,2)
-tikz(file = 'plot_correlation', standAlone = FALSE, width = 7, height = 7)
+tikz(file = 'plot_correlation', standAlone = FALSE, width = 8, height = 8)
 corrplot(speciescor, type = "upper",  
          tl.col = "black", tl.srt = 45)
 dev.off()

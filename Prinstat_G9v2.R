@@ -42,7 +42,7 @@ summary(armpit)
 # Step 2.2: New variable Age above 40 or not
 
 armpit <- armpit %>%
-  mutate(age.40plus = ifelse(Age > 40, 1, 0))
+  mutate(age.40plus = factor(ifelse(Age > 40, 1, 0)))
 
 # Step 3: Distributions of the continious variables
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
@@ -255,7 +255,7 @@ dev.off()
 
 # dichotomiseren van Coryne abundance
 armpit <- armpit %>%
-  mutate(Coryne.dichotoom = ifelse(Corynebacterium.total>50, 1, 0))
+  mutate(Coryne.dichotoom = factor(ifelse(Corynebacterium.total>50, 1, 0)))
 
 plot_dichotoom <- ggplot(armpit, aes(x=Coryne.dichotoom))+ 
   geom_histogram(color = 'black',

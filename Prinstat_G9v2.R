@@ -30,19 +30,13 @@ str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
 
-# Step 2: Make new variables: total of all Corynebacterium species, total of all Staphylococcus species and total of all bacteria
+# Step 2: Make new variables: total of all Corynebacterium species, total of all Staphylococcus species and total of all bacteria + New variable Age above 40 or not
 armpit <- armpit %>% 
   mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
   mutate(Staphylococcus.total = rowSums(.[5:8])) %>%
-  mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total)
+  mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total) %>%
+  mutate(Agecat = factor(ifelse(Age > 40, 1, 0)))
 summary(armpit)
-
-
-
-# Step 2.2: New variable Age above 40 or not
-
-armpit <- armpit %>%
-  mutate(age.40plus = factor(ifelse(Age > 40, 1, 0)))
 
 # Step 3: Distributions of the continious variables
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
@@ -73,6 +67,19 @@ dev.off()
 
 wilcox.test(Corynebacterium.total ~ BMI, data = armpit)
 wilcox.test(Corynebacterium.total ~ Gender, data = armpit)
+armpit %>%
+  select(Corynebacterium.total, BMI, Gender) %>%
+  mutate(BMI.Gender = factor(ifelse(BMI == 0, ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
+  kruskal.test(Corynebacterium.total ~ BMI.Gender, data = .)
+
+tab_BMI_Gender <- armpit %>%
+  group_by(BMI, Gender) %>%
+  summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
+            Observations = n()) 
+
+tab_BMI_Gender
+
+
 
 #Part 2 genus composition change with age, strategy 1
 
@@ -80,13 +87,7 @@ wilcox.test(Corynebacterium.total ~ Gender, data = armpit)
 # A boxplot and summary table was made of the relative abundance of Corynebacterium per age category.
 # Finally, a Kruskal-Wallis test was performed to study if higher values were more likely in certain groups.
 
-# New variable: Agecat --> 4 age categories defined
-armpit$Agecat <- cut(x = armpit$Age, 
-                     breaks = c(0, 25, 35, 50, +Inf), 
-                     labels = c("under 25", "25-34", "35 - 49", "50 or older"), 
-                     ordered_result = T )
-
-# Tables to investigate the joint dependencies
+# Tables to investigate the joint dependencies --> better with combined box plots?
 tab_BMI_Age <- armpit %>%
   group_by(BMI, Agecat) %>%
   summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
@@ -95,6 +96,7 @@ tab_Gender_Age <- armpit %>%
   group_by(Gender, Agecat) %>%
   summarise(Corynebacterium.AvgAbundance  = mean(Corynebacterium.total), 
             Observations = n()) 
+tab_BMI_Age
 
 plot_BMI_Age <- tab_BMI_Age %>%
   ggplot(aes(x = Agecat, y=Corynebacterium.AvgAbundance , size = Observations, color = BMI)) + 

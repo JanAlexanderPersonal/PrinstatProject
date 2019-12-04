@@ -37,6 +37,13 @@ armpit <- armpit %>%
   mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total)
 summary(armpit)
 
+
+
+# Step 2.2: New variable Age above 40 or not
+
+armpit <- armpit %>%
+  mutate(age.40plus = ifelse(Age > 40, 1, 0))
+
 # Step 3: Distributions of the continious variables
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
   geom_histogram(color = 'black',

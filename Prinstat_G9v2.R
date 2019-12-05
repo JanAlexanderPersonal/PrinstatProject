@@ -140,6 +140,7 @@ dev.off()
 # Boxplots of relative abundance of Corynebacterium per age category.
 boxcorr_cory_agecat <- ggplot(armpit, aes(x = Agecat, y=Corynebacterium.total ))+
   geom_boxplot() +
+  geom_jitter(width = 0.05) +
   ggtitle('boxplots of corynebacterium abundance per age category') +
   labs(x='Age category',
        y='Relative abundance of Corynebacterium (\\%)')
@@ -240,6 +241,24 @@ tableprevalence
 #The table below shows the conditional probabilities of detecting a species when another species was detected
 
 mean(armpit$Corynebacterium.1[armpit$Corynebacterium.2>0]>0)
+
+condprob <- matrix(nrow = 8, ncol = 8)
+
+armpit %>%
+  select(Corynebacterium.1:Corynebacterium.4, Staphylococcus.1:Staphylococcus.4) -> bacteria
+
+
+
+for(i in 1:8){
+  for(j in 1:8){
+    condprob[i,j] <- mean(bacteria[i][bacteria[j]>0]>0)
+  }
+}
+
+rownames(condprob) <- colnames(bacteria)
+colnames(condprob) <- colnames(bacteria)
+
+condprob
 
 #TBA: how can we do this for each species vs each other species?
 

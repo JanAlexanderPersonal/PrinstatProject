@@ -34,7 +34,7 @@ armpit[grepl('M', armpit$Gender), 'Gender'] <- 'M'
 # drop the observation where gender and age were not filled out --> TODO : is this acceptable?
 armpit <- armpit[!is.na(armpit$Age),]
 armpit$Gender <- factor(armpit$Gender)
-armpit$BMI <- factor(ifelse(armpit$BMI == 0, 'BMI < 25', 'BMI > 25'))
+armpit$BMI <- factor(ifelse(armpit$BMI == 0, 'BMI <= 25', 'BMI > 25'), ordered = TRUE)
 str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
@@ -44,7 +44,7 @@ armpit <- armpit %>%
   mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
   mutate(Staphylococcus.total = rowSums(.[5:8])) %>%
   mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total) %>%
-  mutate(Agecat = factor(ifelse(Age > 40, 1, 0)))
+  mutate(Agecat = factor(ifelse(Age > 40, 'over 40', '40 or younger'), ordered = TRUE))
 summary(armpit)
 
 # Count the number of observations in both gender en BMI categories
@@ -115,11 +115,23 @@ Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total
   geom_histogram(color = 'black',
                  fill = 'blue',
                  bins = 10) +
-  ggtitle("Histogram of relative abundance of Corynebacterium species") +
-  labs(x='Corynebacterium spp. [\\%]', 
+  labs(x='Corynebacterium genus relative abundance [\\%]', 
        y='Frequency')
 
 tikz(file = 'plot_Coryne_totalDist.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+Corynebacterium.totalDist
+dev.off()
+
+# TODO: What do we prefer: boxplot or histogram?
+
+Corynebacterium.totalDist <- ggplot(data = armpit, aes(y = Corynebacterium.total)) + 
+  geom_boxplot(notch = FALSE) + xlab('Relative abundance [\\%]')+
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  coord_flip()
+  
+tikz('boxplot_Cory.tex', width = 4, height = 1.2)
 Corynebacterium.totalDist
 dev.off()
 
@@ -149,54 +161,43 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
 # Finally, a Kruskal-Wallis test was performed to study if higher values were more likely in certain groups.
 
 # Tables to investigate the joint dependencies --> better with combined box plots?
+stargazer(armpit %>%
+  group_by(BMI, Gender,Agecat) %>%
+  summarise(Observations = n())  %>% 
+  spread(data = ., key = Agecat, value = Observations),
+summary = FALSE, nobs = TRUE, rownames = FALSE, out='table_DistributionAfterAgeDiscr.tex')
 
-tab_BMI_Age <- armpit %>%
-  group_by(BMI, Agecat) %>%
-  summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
-            Observations = n()) 
-tab_Gender_Age <- armpit %>%
-  group_by(Gender, Agecat) %>%
-  summarise(Corynebacterium.AvgAbundance  = mean(Corynebacterium.total), 
-            Observations = n()) 
-tab_BMI_Age
+plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) + 
+  geom_boxplot(outlier.alpha = 0)+
+  geom_point(position = position_jitter()) + 
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age category')
 
-plot_BMI_Age <- tab_BMI_Age %>%
-  ggplot(aes(x = Agecat, y=Corynebacterium.AvgAbundance , size = Observations, color = BMI)) + 
-  geom_point(alpha = 0.75) + 
-  theme(legend.position = "bottom") +
-  scale_size_continuous(limits = c(1, 10), breaks=c(1, 5, 10))+
-  ylim(0, 60)+
-  ylab('Average relative abundance \n of Corynebacterium genus [\\%]')+
-  xlab('Age category')+
-  ggtitle('Relative abundance of Corynebacterium \n as a function of age category')
+plot_BMI_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = BMI)) + 
+  geom_boxplot(outlier.alpha = 0)+
+  geom_point(aes(shape = BMI), position = position_jitterdodge()) + 
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age category') + scale_fill_manual(values=c("white", "gray"))
 
+plot_Gender_age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = Gender)) + 
+  geom_boxplot(outlier.alpha = 0)+
+  geom_point(aes(shape = Gender), position = position_jitterdodge()) + 
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age category') + scale_fill_manual(values=c("white", "gray"))
 
-plot_Gender_age <- tab_Gender_Age %>%
-  ggplot(aes(x = Agecat, y=Corynebacterium.AvgAbundance , size = Observations, color = Gender)) + 
-  geom_point(alpha = 0.75) + 
-  theme(legend.position = "bottom") +
-  ylim(0, 60)+
-  scale_size_continuous(limits = c(1, 10), breaks=c(1, 5, 10))+
-  ylab('Average relative abundance \n of Corynebacterium genus [\\%]')+
-  xlab('Age category')+
-  ggtitle('Relative abundance of Corynebacterium \n as a function of age category')
+tikz(file = 'plot_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+plot_Age
+dev.off()
 
 tikz(file = 'plot_BMI_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_BMI_Age
 dev.off()
+
 tikz(file = 'plot_Gender_age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_Gender_age
-dev.off()
-
-# Distributions of the subjects over these age categories
-AgeCatDist <- ggplot(armpit, aes(x = Agecat)) +
-  geom_bar() + 
-  ggtitle('Number of observations in each age category') +
-  labs(x='Age category',
-       y='Number of observations')
-
-tikz(file = 'plot_AgeCat_distribution.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-AgeCatDist
 dev.off()
 
 # Boxplots of relative abundance of Corynebacterium per age category.
@@ -237,7 +238,7 @@ wilcox.test(Corynebacterium.total ~ Agecat, data = armpit)
 
 armpit %>%
   select(Corynebacterium.total, BMI, Gender) %>%
-  mutate(BMI.Gender = factor(ifelse(BMI == 0, ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
+  mutate(BMI.Gender = factor(ifelse(BMI == 'BMI < 25', ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
   kruskal.test(Corynebacterium.total ~ BMI.Gender, data = .)
 
 #This test was non-significant. Confounding by BMI and age is unlikely.  

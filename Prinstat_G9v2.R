@@ -7,7 +7,7 @@
 figure.width <- 3.2
 figure.height <- 3
 
-round_df <- function(x, digits) {
+round_df <- function(x, digits = 2) {
   # round all numeric variables
   # x: data frame 
   # digits: number of digits to round
@@ -44,7 +44,7 @@ armpit <- armpit %>%
   mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
   mutate(Staphylococcus.total = rowSums(.[5:8])) %>%
   mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total) %>%
-  mutate(Agecat = factor(ifelse(Age > 40, 'over 40', '40 or younger'), ordered = TRUE))
+  mutate(Agecat = factor(ifelse(Age > 40, 'over 40', '40 or younger')))
 summary(armpit)
 
 # Count the number of observations in both gender en BMI categories
@@ -167,12 +167,32 @@ stargazer(armpit %>%
   spread(data = ., key = Agecat, value = Observations),
 summary = FALSE, nobs = TRUE, rownames = FALSE, out='table_DistributionAfterAgeDiscr.tex')
 
+#With 4 exceptions, Corynebacterium spp. abundance low in young age categories. In subjects older than 40 years there was a lot of variation. 
 plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) + 
   geom_boxplot(outlier.alpha = 0)+
-  geom_point(position = position_jitter()) + 
+  geom_point(position = position_jitter(), aes(shape = Agecat)) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
   xlab('Age category')
+
+# Summary table per age category
+tableAgeCat <- armpit %>%
+  group_by(Agecat) %>%
+  summarize(n = n(),
+            mean = round(mean(Corynebacterium.total, na.rm = TRUE),1),
+            min = round(min(Corynebacterium.total, na.rm = TRUE),1),
+            median = round(median(Corynebacterium.total, na.rm = TRUE),1),
+            max = round(max(Corynebacterium.total, na.rm = TRUE),1),
+            n_present = sum(Corynebacterium.total>0, na.rm = TRUE),
+            percentage_present=round(n_present/n*100, 1)) 
+stargazer(tableAgeCat, summary = FALSE, out='table_AgeCat_Cory.tex', rownames = FALSE, nobs = FALSE)
+
+#Wilcoxon test: test if the distribution of Corynebacterium abundance differed between young and old subjects. 
+
+wilcox.test(Corynebacterium.total ~ Agecat, data = armpit, alternative = "two.sided")
+# The test was highly significant. Higher Corynebacterium abundance was more likely in older subjects.
+
+# How comparable are the two age categories apart from the age difference? 
 
 plot_BMI_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = BMI)) + 
   geom_boxplot(outlier.alpha = 0)+
@@ -200,45 +220,11 @@ tikz(file = 'plot_Gender_age.tex', standAlone = FALSE, width = figure.width, hei
 plot_Gender_age
 dev.off()
 
-# Boxplots of relative abundance of Corynebacterium per age category.
-boxcorr_cory_agecat <- ggplot(armpit, aes(x = Agecat, y=Corynebacterium.total ))+
-  geom_boxplot() +
-  geom_jitter(width = 0.05) +
-  ggtitle('boxplots of corynebacterium abundance per age category') +
-  labs(x='Age category',
-       y='Relative abundance of Corynebacterium (\\%)')
-
-tikz(file = 'plot_boxplotcorr_Coryne_AgeCat', standAlone = FALSE, width = figure.width, height = figure.height)
-boxcorr_cory_agecat
-dev.off()
-
-#With 2 exceptions, Corynebacterium spp. abundance low in young age categories. In subjects older than 35 years there was a lot of variation. 
-
-# Summary table per age category
-
-tablecor <- armpit %>%
-  group_by(Agecat) %>%
-  summarize(n = n(),
-            mean = mean(Corynebacterium.total, na.rm = TRUE),
-            min = min(Corynebacterium.total, na.rm = TRUE),
-            median = median(Corynebacterium.total, na.rm = TRUE),
-            max = max(Corynebacterium.total, na.rm = TRUE),
-            n_positive = sum(Corynebacterium.total>0, na.rm = TRUE),
-            percentage_positive=n_positive/n*100)
-stargazer(tablecor, summary = FALSE, out='table_cor.tex', align = TRUE, digits = 2)
-
-#Wilcoxon test: test if the distribution of Corynebacterium abundance differed between young and old subjects. 
-
-wilcox.test(Corynebacterium.total ~ Agecat, data = armpit)
-
-#The test was highly significant. Higher Corynebacterium abundance was more likely in older subjects.
-
-
 #A Kruskal wallis test was performed to test if distribution of Corynebacterium abundance differed between gender and BMI groups.  
 
 armpit %>%
   select(Corynebacterium.total, BMI, Gender) %>%
-  mutate(BMI.Gender = factor(ifelse(BMI == 'BMI < 25', ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
+  mutate(BMI.Gender = factor(ifelse(BMI == 'BMI <= 25', ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
   kruskal.test(Corynebacterium.total ~ BMI.Gender, data = .)
 
 #This test was non-significant. Confounding by BMI and age is unlikely.  
@@ -349,7 +335,7 @@ round(Pchisq, 2)
 
 speciescor <- cor(armpit[ ,c(1:8)],method="kendall")
 round(speciescor,2)
-tikz(file = 'plot_correlation', standAlone = FALSE, width = 8, height = 8)
+tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
 corrplot(speciescor, type = "upper",  
          tl.col = "black", tl.srt = 45,method="number")
 dev.off()

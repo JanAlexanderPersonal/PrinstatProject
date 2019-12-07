@@ -7,6 +7,15 @@
 figure.width <- 3.2
 figure.height <- 3
 
+round_df <- function(x, digits) {
+  # round all numeric variables
+  # x: data frame 
+  # digits: number of digits to round
+  numeric_columns <- sapply(x, mode) == 'numeric'
+  x[numeric_columns] <-  round(x[numeric_columns], digits)
+  x
+}
+
 #Part 1: data cleaning and initial data analysis
 
 # Load relevant packages:
@@ -43,9 +52,33 @@ tab_BMI_Gender <- armpit %>%
   group_by(BMI, Gender) %>%
   summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
             Observations = n()) 
-tab_BMI_Gender %>% 
+
+stargazer(tab_BMI_Gender %>% 
             select(BMI, Gender, Observations) %>%
-            spread(data = ., key = BMI, value = Observations)
+            spread(data = ., key = BMI, value = Observations), 
+          summary = FALSE, nobs = TRUE, out='table_Observations_BMI_Gender.tex')
+
+# Explore the independent variable age
+
+AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
+  geom_histogram(color = 'black',
+                 fill = 'blue',
+                 binwidth = 5) +
+  labs(x='Patient age [years]', 
+       y='Observation frequency')
+
+stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
+                                               Q1 = quantile(Age, .25),
+                                               median = median(Age, na.rm = TRUE),
+                                               mean = mean(Age, na.rm = TRUE),
+                                               Q3 = quantile(Age, .75),
+                                               max = max(Age, na.rm = TRUE))
+          , summary = FALSE, out = 'table_Age_statistics.tex', rownames = FALSE)
+tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+AgeDist
+dev.off()
+
+#Mainly young subjects participated in the study. The age distribution was not normal.
 
 # Step 3: Explore the variables of interest
 
@@ -73,7 +106,8 @@ measures_genus <- genus_armpit %>%
             sd = sd(Abundance, na.rm = TRUE),
             min = min(Abundance, na.rm = TRUE),
             max = max(Abundance, na.rm = TRUE))
-rbind(measures_genus,measures_species)
+stargazer(round_df(rbind(measures_genus,measures_species), 1), summary = FALSE, nobs = FALSE, out='table_Statistics_Bacteria.tex', align = FALSE, rownames = FALSE)
+
 
 #The large differences between means and medians indicate that the values are not normally distributed. This was further studied by plotting histograms.
 
@@ -107,22 +141,6 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
   
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
-
-# Step 3: Explore the independent variable age
-
-AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
-  geom_histogram(color = 'black',
-                 fill = 'blue',
-                 binwidth = 5) +
-  ggtitle("Histogram of patient age") +
-  labs(x='Patient age [years]', 
-       y='Frequency')
-
-tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-AgeDist
-dev.off()
-
-#Mainly young subjects participated in the study. The age distribution was not normal.
 
 #Part 2 genus composition change with age, strategy 1
 

@@ -25,7 +25,7 @@ armpit[grepl('M', armpit$Gender), 'Gender'] <- 'M'
 # drop the observation where gender and age were not filled out --> TODO : is this acceptable?
 armpit <- armpit[!is.na(armpit$Age),]
 armpit$Gender <- factor(armpit$Gender)
-armpit$BMI <- factor(armpit$BMI)
+armpit$BMI <- factor(ifelse(armpit$BMI == 0, 'BMI < 25', 'BMI > 25'))
 str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
@@ -37,6 +37,15 @@ armpit <- armpit %>%
   mutate(Bacteria.total = Corynebacterium.total + Staphylococcus.total) %>%
   mutate(Agecat = factor(ifelse(Age > 40, 1, 0)))
 summary(armpit)
+
+# Count the number of observations in both gender en BMI categories
+tab_BMI_Gender <- armpit %>%
+  group_by(BMI, Gender) %>%
+  summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
+            Observations = n()) 
+tab_BMI_Gender %>% 
+            select(BMI, Gender, Observations) %>%
+            spread(data = ., key = BMI, value = Observations)
 
 # Step 3: Explore the variables of interest
 

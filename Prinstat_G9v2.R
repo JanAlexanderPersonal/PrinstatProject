@@ -38,7 +38,69 @@ armpit <- armpit %>%
   mutate(Agecat = factor(ifelse(Age > 40, 1, 0)))
 summary(armpit)
 
-# Step 3: Distributions of the continious variables
+# Step 3: Explore the variables of interest
+
+#Basic measures of location and spread are shown below.
+
+armpit$subjectID <- rownames(armpit)
+species_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4)
+head(species_armpit,50)
+
+measures_species <- species_armpit %>%
+  group_by(Species) %>%
+  summarize(mean = mean(Abundance, na.rm = TRUE),
+            median = median(Abundance, na.rm = TRUE),
+            sd = sd(Abundance, na.rm = TRUE),
+            min = min(Abundance, na.rm = TRUE),
+            max = max(Abundance, na.rm = TRUE))
+
+genus_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.total:Staphylococcus.total)
+head(genus_armpit,50)
+
+measures_genus <- genus_armpit %>%
+  group_by(Species) %>%
+  summarize(mean = mean(Abundance, na.rm = TRUE),
+            median = median(Abundance, na.rm = TRUE),
+            sd = sd(Abundance, na.rm = TRUE),
+            min = min(Abundance, na.rm = TRUE),
+            max = max(Abundance, na.rm = TRUE))
+rbind(measures_genus,measures_species)
+
+#The large differences between means and medians indicate that the values are not normally distributed. This was further studied by plotting histograms.
+
+Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total)) + 
+  geom_histogram(color = 'black',
+                 fill = 'blue',
+                 bins = 10) +
+  ggtitle("Histogram of relative abundance of Corynebacterium species") +
+  labs(x='Corynebacterium spp. [\\%]', 
+       y='Frequency')
+
+tikz(file = 'plot_Coryne_totalDist.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+Corynebacterium.totalDist
+dev.off()
+
+#Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
+#No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
+
+#Boxplots and individual observations of the relative abundance were plotted per species.
+
+SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
+  geom_boxplot(colour = "grey50",outlier.shape=NA) +
+  geom_jitter()+
+  geom_line(data=measures_species, aes(x=Species, y=mean,group = 1),color='blue') + 
+  geom_line(data=measures_species, aes(x=Species, y=median,group = 1),color='red') + 
+  ylab("Relative abundance (%)")+
+  xlab("Species")+
+  theme(axis.text.x = element_text(angle = 45))+
+  annotate(geom="text", x=7, y=80, label="median", color="red")+
+  annotate(geom="text", x=7, y=60, label="mean", color="blue")
+  
+#The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
+#For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
+
+# Step 3: Explore the independent variable age
+
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
   geom_histogram(color = 'black',
                  fill = 'blue',
@@ -51,35 +113,7 @@ tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width
 AgeDist
 dev.off()
 
-Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total)) + 
-  geom_histogram(color = 'black',
-                 fill = 'blue',
-                 bins = 10) +
-  ggtitle("Histogram of relative abundance of Corynebacterium species") +
-  labs(x='Corynebacterium spp. [\\%]', 
-       y='Frequency')
-tikz(file = 'plot_Coryne_totalDist.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-Corynebacterium.totalDist
-dev.off()
-
-#Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
-#No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
-
-wilcox.test(Corynebacterium.total ~ BMI, data = armpit)
-wilcox.test(Corynebacterium.total ~ Gender, data = armpit)
-armpit %>%
-  select(Corynebacterium.total, BMI, Gender) %>%
-  mutate(BMI.Gender = factor(ifelse(BMI == 0, ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
-  kruskal.test(Corynebacterium.total ~ BMI.Gender, data = .)
-
-tab_BMI_Gender <- armpit %>%
-  group_by(BMI, Gender) %>%
-  summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
-            Observations = n()) 
-
-tab_BMI_Gender
-
-
+#Mainly young subjects participated in the study. The age distribution was not normal.
 
 #Part 2 genus composition change with age, strategy 1
 
@@ -88,6 +122,7 @@ tab_BMI_Gender
 # Finally, a Kruskal-Wallis test was performed to study if higher values were more likely in certain groups.
 
 # Tables to investigate the joint dependencies --> better with combined box plots?
+
 tab_BMI_Age <- armpit %>%
   group_by(BMI, Agecat) %>%
   summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
@@ -164,9 +199,22 @@ tablecor <- armpit %>%
             percentage_positive=n_positive/n*100)
 stargazer(tablecor, summary = FALSE, out='table_cor.tex', align = TRUE, digits = 2)
 
-#Kruskal-Wallis test: test if higher values are more likely in certain groups 
+#Wilcoxon test: test if the distribution of Corynebacterium abundance differed between young and old subjects. 
 
-kruskal.test(Corynebacterium.total ~ Agecat, data = armpit)
+wilcox.test(Corynebacterium.total ~ Agecat, data = armpit)
+
+#The test was highly significant. Higher Corynebacterium abundance was more likely in older subjects.
+
+
+#A Kruskal wallis test was performed to test if distribution of Corynebacterium abundance differed between gender and BMI groups.  
+
+armpit %>%
+  select(Corynebacterium.total, BMI, Gender) %>%
+  mutate(BMI.Gender = factor(ifelse(BMI == 0, ifelse(Gender == "F", 0, 1), ifelse(Gender == "F", 2, 3)))) %>%
+  kruskal.test(Corynebacterium.total ~ BMI.Gender, data = .)
+
+#This test was non-significant. Confounding by BMI and age is unlikely.  
+
 
 #Part 2 genus composition change with age, strategy 2
 
@@ -203,6 +251,7 @@ cor.test(armpit$Age, armpit$Corynebacterium.total,
 
 # Part 3 relative abundances of the 8 species
 
+#The initial data analysis showed that certain species are often absent in subjects.
 #First step: look how many species occur together
 
 armpit$nspecies <-  rowSums(armpit[,c(1:8)]>0)
@@ -220,22 +269,7 @@ tikz(file = 'plot_JointOccurance.tex', standAlone = FALSE, width = figure.width,
 nspeciesDist
 dev.off()
 
-#In one subject, only 1 species was found.
-
-#Prevalence of each species is shown in the table below
-
-armpit$subjectID <- rownames(armpit)
-long_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4)
-head(long_armpit,50)
-
-tableprevalence <- long_armpit %>%
-  group_by(Species) %>%
-  summarize(n_positive = sum(Abundance>0, na.rm = TRUE),
-            percentage_positive=n_positive/length(Abundance)*100,
-            min_abundance = min(Abundance, na.rm = TRUE),
-            max_abundance = max(Abundance, na.rm = TRUE))
-
-tableprevalence
+#In one subject, only 1 species was found. None of the subjects tested positive on all 8 species.
 
 
 #The table below shows the conditional probabilities of detecting a species when another species was detected
@@ -258,17 +292,38 @@ for(i in 1:8){
 rownames(condprob) <- colnames(bacteria)
 colnames(condprob) <- colnames(bacteria)
 
-condprob
+round(condprob,  2)
 
-#TBA: how can we do this for each species vs each other species?
+#Can we do the same thing with a chi square test?
 
-#The plot below shows the spearman correlation coefficients
+chisq.test(armpit$Corynebacterium.1>0,armpit$Corynebacterium.2>0)$p.value
 
-speciescor <- cor(armpit[ ,c(1:8)],method="spearman")
+#For loops seems not to work.
+
+
+
+Pchisq <- matrix(nrow = 8, ncol = 8)
+
+
+for(i in 1:8){
+  for(j in 1:8){
+    Pchisq[i,j] <- chisq.test(bacteria[i]>0,bacteria[j]>0)$p.value
+  }
+}
+
+rownames(Pchisq) <- colnames(bacteria)
+colnames(Pchisq) <- colnames(bacteria)
+
+round(Pchisq, 2)
+
+
+#The plot below shows the Kendall correlation coefficients
+
+speciescor <- cor(armpit[ ,c(1:8)],method="kendall")
 round(speciescor,2)
 tikz(file = 'plot_correlation', standAlone = FALSE, width = 8, height = 8)
 corrplot(speciescor, type = "upper",  
-         tl.col = "black", tl.srt = 45)
+         tl.col = "black", tl.srt = 45,method="number")
 dev.off()
 
 

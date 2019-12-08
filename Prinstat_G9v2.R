@@ -7,6 +7,7 @@
 figure.width <- 3.2
 figure.height <- 3
 
+
 round_df <- function(x, digits = 2) {
   # round all numeric variables
   # x: data frame 
@@ -21,6 +22,8 @@ round_df <- function(x, digits = 2) {
 # Load relevant packages:
 packages <- c('coin','ggplot2', 'reshape2', 'dplyr', 'gridGraphics', 'tidyverse', 'corrplot', 'tidyr', 'tikzDevice', 'stargazer')
 lapply(packages, library, character.only = TRUE)
+
+theme_set(theme_light())
 
 # Load the file 'armpit.txt', containing the data
 filename <- "armpit.txt"
@@ -85,8 +88,10 @@ dev.off()
 #Basic measures of location and spread are shown below.
 
 armpit$subjectID <- rownames(armpit)
-species_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4)
+species_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4) %>%
+  mutate(Genus = ifelse(grepl("Cory", Species), "Corynebacterium", "Staphyloccus"))
 head(species_armpit,50)
+
 
 measures_species <- species_armpit %>%
   group_by(Species) %>%
@@ -150,6 +155,27 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
   theme(axis.text.x = element_text(angle = 45))+
   annotate(geom="text", x=7, y=80, label="median", color="red")+
   annotate(geom="text", x=7, y=60, label="mean", color="blue")
+
+SpeciesDist
+
+
+
+ggplot(species_armpit, aes(Abundance)) +
+  geom_histogram(bins = 20) +
+  geom_vline(data = measures_species, aes(xintercept = mean), color="blue") +
+  geom_vline(data = measures_species, aes(xintercept = median), color = "red") +
+  facet_wrap(~Species, nrow = 2, scales = "free") +
+  labs(x="Relative species abundance (%)",
+       y="Count")
+
+ggplot(species_armpit, aes(x = Species, y = Abundance)) +
+  geom_boxplot(aes(color = Genus)) +
+  geom_point(data = measures_species, aes(x = Species, y=`mean`), shape = 6, size = 3) +
+  coord_flip() +
+  labs(x="Species",
+       y="Relative species abundance (%)") +
+  guides(color = guide_legend(reverse = TRUE), shape = guide_legend(title = "Mean")) 
+
   
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
@@ -235,31 +261,46 @@ armpit %>%
 #Protocol: a scatterplot with loess curve was made of the relative abundance of Corynebacterium by age. 
 #Pearson and Spearman correlation coefficients were calculated and tested.
 
-# Scatterplot to get a first idea how relative abundance of Corynebacterium evolves with age
-corbyage <- ggplot(armpit, aes(x=Age, y=Corynebacterium.total)) + 
-  geom_point()+
-  geom_smooth() + # Ziet er mooi uit, maar is dit ook 'correct' (aanvaardbaar)
-  ggtitle('relative abundance of Corynebacterium vs subject age') +
-  labs(x = 'Age [years]', 
-       y = 'Relative abundance of Corynebacterium') 
-tikz(file = 'plot_scatterplot_Age_corby.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-corbyage
-dev.off()
-
-
-# What does the correlation function in R actually deliver as an output?
-cor(armpit$Age, armpit$Corynebacterium.total, method = "pearson")
-cor(armpit$Age, armpit$Corynebacterium.total, method = "spearman")
-
-cor.test(armpit$Age, armpit$Corynebacterium.total, 
-         alternative = c('two.sided'),
-         method = 'pearson',
-         conf.level = 0.95)
+# # Scatterplot to get a first idea how relative abundance of Corynebacterium evolves with age
+# corbyage <- ggplot(armpit, aes(x=Age, y=Corynebacterium.total)) + 
+#   geom_point()+
+#   geom_smooth() + # Ziet er mooi uit, maar is dit ook 'correct' (aanvaardbaar)
+#   ggtitle('relative abundance of Corynebacterium vs subject age') +
+#   labs(x = 'Age [years]', 
+#        y = 'Relative abundance of Corynebacterium') 
+# tikz(file = 'plot_scatterplot_Age_corby.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+# corbyage
+# dev.off()
+# 
+# 
+# # What does the correlation function in R actually deliver as an output?
+# cor(armpit$Age, armpit$Corynebacterium.total, method = "pearson")
+# cor(armpit$Age, armpit$Corynebacterium.total, method = "spearman")
+# 
+# cor.test(armpit$Age, armpit$Corynebacterium.total, 
+#          alternative = c('two.sided'),
+#          method = 'pearson',
+#          conf.level = 0.95)
 
 cor.test(armpit$Age, armpit$Corynebacterium.total, 
          alternative = c('two.sided'),
          method = 'kendall',
          conf.level = 0.95)
+
+source("tau_cor_conf.R")
+
+tau_cor_conf(armpit, "Age", "Corynebacterium.total")
+
+ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
+  geom_hex()
+
+ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
+  geom_point(aes(color = Gender, shape= BMI)) 
+
+ggplot(armpit, aes(x = Age, y = Corynebacterium.total+0.00001)) +
+  stat_density_2d(aes(fill=stat(density)), geom = "raster", contour = FALSE) +
+  scale_fill_continuous(type = "viridis") +
+  theme_minimal() 
 
 #TBA: (dis)advantages of strategy 1 and 2
 

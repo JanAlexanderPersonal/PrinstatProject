@@ -297,10 +297,11 @@ ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
 ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
   geom_point(aes(color = Gender, shape= BMI)) 
 
-ggplot(armpit, aes(x = Age, y = Corynebacterium.total+0.00001)) +
+ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
   stat_density_2d(aes(fill=stat(density)), geom = "raster", contour = FALSE) +
   scale_fill_continuous(type = "viridis") +
   theme_minimal() 
+
 
 #TBA: (dis)advantages of strategy 1 and 2
 

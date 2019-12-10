@@ -212,6 +212,7 @@ summary = FALSE, nobs = TRUE, rownames = FALSE, out='table_DistributionAfterAgeD
 plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) + 
   geom_boxplot(outlier.alpha = 0)+
   geom_point(position = position_jitter(), aes(shape = Agecat)) + 
+  stat_summary(fun.y = mean, aes(shape = Agecat) ,geom="point",color = 'darkgray', size=3, position = position_dodge()) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
   xlab('Age category')
@@ -238,7 +239,7 @@ wilcox.test(Corynebacterium.total ~ Agecat, data = armpit, alternative = "two.si
 # Because these are indicated by the overlayed point plots!
 plot_BMI_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = BMI)) + 
   geom_boxplot(outlier.alpha = 0)+
-  stat_summary(fun.y = mean, geom="point",aes( shape = Gender),color = 'darkgray', size=3, position = position_jitterdodge())+
+  stat_summary(fun.y = mean, geom="point",aes( shape = BMI),color = 'darkgray', size=3, position = position_jitterdodge())+
   geom_point(aes(shape = BMI), position = position_jitterdodge()) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
@@ -352,8 +353,8 @@ nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) +
                  bins=7) +
   scale_x_continuous(breaks = seq(1, 8))+
   scale_y_continuous(breaks = seq(0, 10, 2))+
-  labs(x='Number of species', 
-       y='Number of observations')
+  labs(x='\\# species', 
+       y='\\# observations')
 
 tikz(file = 'plot_nspeciesDist.tex', standAlone = FALSE, width = figure.width, height = figure.height / 2)
 nspeciesDist
@@ -399,13 +400,13 @@ plot_conditionP_occurance <- round(condprob,  2) %>%
         axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
         plot.title = element_text(size=20,face="bold"),
         axis.text.y = element_text(size = 12,face = "bold")) + 
-  ggtitle("Conditional probability of occurance") + 
-  theme(legend.title=element_text(face="bold", size=14)) + 
+  # ggtitle("Conditional probability of occurance") + 
+  theme(legend.position = 'none') + 
   scale_x_discrete(name="") +
   scale_y_discrete(name="") +
   labs(fill="Conditional\nprobability")
 
-tikz(file = 'plot_conditionP_occurance.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+tikz(file = 'plot_conditionP_occurance.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
 plot_conditionP_occurance
 dev.off()
 

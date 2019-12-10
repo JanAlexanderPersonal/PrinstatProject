@@ -7,7 +7,7 @@
 figure.width <- 3.2
 figure.height <- 3
 
-
+#####
 round_df <- function(x, digits = 2) {
   # round all numeric variables
   # x: data frame 
@@ -17,32 +17,37 @@ round_df <- function(x, digits = 2) {
   x
 }
 
-#Part 1: data cleaning and initial data analysis
+# Load packages ####
 
 # Load relevant packages:
-packages <- c('coin','ggplot2', 'reshape2', 'dplyr', 'gridGraphics', 'tidyverse', 'corrplot', 'tidyr', 'tikzDevice', 'stargazer')
+packages <- c('reshape2', 'gridGraphics', 'tidyverse', 'corrplot', 'tikzDevice', 'stargazer', 'hexbin')
 lapply(packages, library, character.only = TRUE)
 
 theme_set(theme_light())
 
+# Load data, data cleaning and descriptive data analysis ####
 # Load the file 'armpit.txt', containing the data
 filename <- "armpit.txt"
 armpit <- read.table(filename)
-summary(armpit)
+str(armpit)
 
 # Step 1: assure we have correct gender labels, now we have 5.
 # convert the gender 'F ' to 'F' and ' M' to 'M'
 armpit[grepl('F', armpit$Gender), 'Gender'] <- 'F'
 armpit[grepl('M', armpit$Gender), 'Gender'] <- 'M'
-# drop the observation where gender and age were not filled out --> TODO : is this acceptable?
+# drop the observation where gender and age were not filled out. 
+# Factor the BMI values with their description.
 armpit <- armpit[!is.na(armpit$Age),]
 armpit$Gender <- factor(armpit$Gender)
 armpit$BMI <- factor(ifelse(armpit$BMI == 0, 'BMI <= 25', 'BMI > 25'), ordered = TRUE)
+armpit$subjectID <- rownames(armpit)
 str(armpit)
 # From this summary, we can see that the bacteria total is 100% for all observations
 summary(armpit)
 
-# Step 2: Make new variables: total of all Corynebacterium species, total of all Staphylococcus species and total of all bacteria + New variable Age above 40 or not
+# Step 2: Make new variables: total of all Corynebacterium species, 
+# total of all Staphylococcus species and total of all bacteria
+# New variable: age categories --> Age above 40 or not
 armpit <- armpit %>% 
   mutate(Corynebacterium.total = rowSums(.[1:4])) %>%
   mutate(Staphylococcus.total = rowSums(.[5:8])) %>%
@@ -51,25 +56,27 @@ armpit <- armpit %>%
 summary(armpit)
 
 # Count the number of observations in both gender en BMI categories
+# AvgAbundance is added to provide a first view
 tab_BMI_Gender <- armpit %>%
   group_by(BMI, Gender) %>%
   summarise(Corynebacterium.AvgAbundance = mean(Corynebacterium.total), 
             Observations = n()) 
 
+# Export table to include into report (only number of observations)
 stargazer(tab_BMI_Gender %>% 
             select(BMI, Gender, Observations) %>%
             spread(data = ., key = BMI, value = Observations), 
           summary = FALSE, nobs = TRUE, out='table_Observations_BMI_Gender.tex')
 
-# Explore the independent variable age
-
+# AgeDist: histogram age distribution in dataset
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
   geom_histogram(color = 'black',
-                 fill = 'blue',
+                 fill = 'white',
                  binwidth = 5) +
   labs(x='Patient age [years]', 
        y='Observation frequency')
 
+# Export table with basic statistics age distribution for report
 stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
                                                Q1 = quantile(Age, .25),
                                                median = median(Age, na.rm = TRUE),
@@ -77,21 +84,19 @@ stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
                                                Q3 = quantile(Age, .75),
                                                max = max(Age, na.rm = TRUE))
           , summary = FALSE, out = 'table_Age_statistics.tex', rownames = FALSE)
+# Export histogram figure Age distribution
 tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 AgeDist
 dev.off()
 
 #Mainly young subjects participated in the study. The age distribution was not normal.
 
-# Step 3: Explore the variables of interest
-
-#Basic measures of location and spread are shown below.
-
-armpit$subjectID <- rownames(armpit)
+# EXPLORE THE VARIABLE #####
+# Explore the variables of interest (Relative abundance of bacteria species)
+# Basic measures of location and spread are shown below and exported to a table for the report
 species_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4) %>%
   mutate(Genus = ifelse(grepl("Cory", Species), "Corynebacterium", "Staphyloccus"))
-head(species_armpit,50)
-
+head(species_armpit,3)
 
 measures_species <- species_armpit %>%
   group_by(Species) %>%
@@ -102,7 +107,7 @@ measures_species <- species_armpit %>%
             max = max(Abundance, na.rm = TRUE))
 
 genus_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.total:Staphylococcus.total)
-head(genus_armpit,50)
+head(genus_armpit,3)
 
 measures_genus <- genus_armpit %>%
   group_by(Species) %>%
@@ -114,11 +119,11 @@ measures_genus <- genus_armpit %>%
 stargazer(round_df(rbind(measures_genus,measures_species), 1), summary = FALSE, nobs = FALSE, out='table_Statistics_Bacteria.tex', align = FALSE, rownames = FALSE)
 
 
-#The large differences between means and medians indicate that the values are not normally distributed. This was further studied by plotting histograms.
-
+#The large differences between means and medians indicate that the values are not normally distributed. 
+# This was further studied by plotting histograms.
 Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total)) + 
   geom_histogram(color = 'black',
-                 fill = 'blue',
+                 fill = 'white',
                  bins = 10) +
   labs(x='Corynebacterium genus relative abundance [\\%]', 
        y='Frequency')
@@ -140,8 +145,8 @@ tikz('boxplot_Cory.tex', width = 4, height = 1.2)
 Corynebacterium.totalDist
 dev.off()
 
-#Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
-#No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
+# Corynebacterium relative abundance does not follow a normal distribution.  The genus was absent in most subjects.
+# No histogram was made for Staphylococci as this equals 100-Corynebacterium.total
 
 #Boxplots and individual observations of the relative abundance were plotted per species.
 
@@ -156,11 +161,13 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
   annotate(geom="text", x=7, y=80, label="median", color="red")+
   annotate(geom="text", x=7, y=60, label="mean", color="blue")
 
+# TODO: I do not find this graph very clear. Please elaborate
 SpeciesDist
 
 
-
-ggplot(species_armpit, aes(Abundance)) +
+# Histogram and boxplot indicating the distribution of the relative species abundance
+# TODO: keep 1 of 2
+Histogram_species <- ggplot(species_armpit, aes(Abundance)) +
   geom_histogram(bins = 20) +
   geom_vline(data = measures_species, aes(xintercept = mean), color="blue") +
   geom_vline(data = measures_species, aes(xintercept = median), color = "red") +
@@ -168,21 +175,28 @@ ggplot(species_armpit, aes(Abundance)) +
   labs(x="Relative species abundance (%)",
        y="Count")
 
-ggplot(species_armpit, aes(x = Species, y = Abundance)) +
-  geom_boxplot(aes(color = Genus)) +
-  geom_point(data = measures_species, aes(x = Species, y=`mean`), shape = 6, size = 3) +
+Boxplot_species <- ggplot(species_armpit, aes(x = Species, y = Abundance)) +
+  geom_boxplot(aes(fill = Genus)) +
+  scale_fill_manual(values=c("gray", "white")) +
+  geom_point(data = measures_species, 
+             aes(x = Species, y=`mean`), shape = 6, size = 3) +
   coord_flip() +
+  theme(legend.position = "bottom") +
   labs(x="Species",
-       y="Relative species abundance (%)") +
-  guides(color = guide_legend(reverse = TRUE), shape = guide_legend(title = "Mean")) 
+       y="Relative species abundance (\\%)") +
+  guides(color = guide_legend(reverse = FALSE), 
+         shape = guide_legend(title = "Mean"))
 
+tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
+Boxplot_species
+dev.off()
   
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
 
-#Part 2 genus composition change with age, strategy 1
+# PART 2 genus composition change with age, strategy 1 : Age as a discrete variable ####
 
-#Protocol: a new variable was made with 4 age categories. 
+#Protocol: a new variable was made with 2 age categories. 
 # A boxplot and summary table was made of the relative abundance of Corynebacterium per age category.
 # Finally, a Kruskal-Wallis test was performed to study if higher values were more likely in certain groups.
 
@@ -193,7 +207,8 @@ stargazer(armpit %>%
   spread(data = ., key = Agecat, value = Observations),
 summary = FALSE, nobs = TRUE, rownames = FALSE, out='table_DistributionAfterAgeDiscr.tex')
 
-#With 4 exceptions, Corynebacterium spp. abundance low in young age categories. In subjects older than 40 years there was a lot of variation. 
+# With 4 exceptions, Corynebacterium spp. abundance low in young age categories. 
+# In subjects older than 40 years there was a lot of variation. 
 plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) + 
   geom_boxplot(outlier.alpha = 0)+
   geom_point(position = position_jitter(), aes(shape = Agecat)) + 
@@ -219,20 +234,23 @@ wilcox.test(Corynebacterium.total ~ Agecat, data = armpit, alternative = "two.si
 # The test was highly significant. Higher Corynebacterium abundance was more likely in older subjects.
 
 # How comparable are the two age categories apart from the age difference? 
-
+# Remark : outlier.alpha = 0 makes the outliers in the boxplot invisible. This is only acceptable in this case
+# Because these are indicated by the overlayed point plots!
 plot_BMI_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = BMI)) + 
   geom_boxplot(outlier.alpha = 0)+
+  stat_summary(fun.y = mean, geom="point",aes( shape = Gender),color = 'darkgray', size=3, position = position_jitterdodge())+
   geom_point(aes(shape = BMI), position = position_jitterdodge()) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
-  xlab('Age category') + scale_fill_manual(values=c("white", "gray"))
+  xlab('Age category') + scale_fill_manual(values=c("white", "lightgray"))
 
 plot_Gender_age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill = Gender)) + 
   geom_boxplot(outlier.alpha = 0)+
+  stat_summary(fun.y = mean, geom="point",aes( shape = Gender),color = 'darkgray', size=3, position = position_jitterdodge())+
   geom_point(aes(shape = Gender), position = position_jitterdodge()) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
-  xlab('Age category') + scale_fill_manual(values=c("white", "gray"))
+  xlab('Age category') + scale_fill_manual(values=c("white", "lightgray"))
 
 tikz(file = 'plot_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_Age
@@ -256,10 +274,10 @@ armpit %>%
 #This test was non-significant. Confounding by BMI and age is unlikely.  
 
 
-#Part 2 genus composition change with age, strategy 2
+# Part 2 genus composition change with age, strategy 2: Age as a continuous variable ####
 
-#Protocol: a scatterplot with loess curve was made of the relative abundance of Corynebacterium by age. 
-#Pearson and Spearman correlation coefficients were calculated and tested.
+# Protocol: a scatterplot with loess curve was made of the relative abundance of Corynebacterium by age. 
+# Pearson and Spearman correlation coefficients were calculated and tested.
 
 # # Scatterplot to get a first idea how relative abundance of Corynebacterium evolves with age
 # corbyage <- ggplot(armpit, aes(x=Age, y=Corynebacterium.total)) + 
@@ -291,21 +309,36 @@ source("tau_cor_conf.R")
 
 tau_cor_conf(armpit, "Age", "Corynebacterium.total")
 
-ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
-  geom_hex()
+plot_hexplot_age_cory <- ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
+  geom_hex(colour = 'blue') +
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age [years]')
+  
 
-ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
-  geom_point(aes(color = Gender, shape= BMI)) 
+plot_scatterplot_age_cory <- ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
+  geom_point(aes(color = Gender, shape= BMI), size = 3) +
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age [years]') + 
+  scale_color_manual(values=c("darkgray", "black"))
 
-ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
+tikz(file = 'plot_scatterplot_age_cory.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
+plot_scatterplot_age_cory
+dev.off()
+
+plot_heatmap_age_cory <-ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
   stat_density_2d(aes(fill=stat(density)), geom = "raster", contour = FALSE) +
   scale_fill_continuous(type = "viridis") +
-  theme_minimal() 
+  theme_minimal() +
+  theme(legend.position = "bottom") + 
+  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
+  xlab('Age [years]')
 
 
 #TBA: (dis)advantages of strategy 1 and 2
 
-# Part 3 relative abundances of the 8 species
+# Part 3 relative abundances of the 8 species ####
 
 #The initial data analysis showed that certain species are often absent in subjects.
 #First step: look how many species occur together
@@ -315,7 +348,7 @@ summary(armpit)
 
 nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) + 
   geom_histogram(color = 'black',
-                 fill = 'blue',
+                 fill = 'white',
                  bins=7) +
   ggtitle("Histogram of number of concurrent species") +
   labs(x='number of species', 

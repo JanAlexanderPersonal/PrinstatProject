@@ -383,14 +383,14 @@ corrplot(speciescor, type = "upper",
 dev.off()
 
 
-### steven
+
 
 # dichotomiseren van Coryne abundance
 armpit <- armpit %>%
   mutate(Coryne.dichotoom = factor(ifelse(Corynebacterium.total>50, 1, 0)))
 
 plot_dichotoom <- ggplot(armpit, aes(x=Coryne.dichotoom))+ 
-  geom_histogram(color = 'black',
+  geom_bar(color = 'black',
                  fill = 'blue') +
   ggtitle("dichotoom") 
 tikz(file = 'plot_dichotoom.tex', height = figure.height, width = figure.width, standAlone = FALSE)
@@ -413,7 +413,7 @@ cor.test(armpit$Age, armpit$Corynebacterium.total,
          method = "kendall",
          conf.level = .95)
 
-plot.2 <- ggplot(armpit,aes(x = Age, y = Coryne.dichotoom)) +
+plot_2 <- ggplot(armpit,aes(x = Age, y = as.numeric(Coryne.dichotoom)-1)) +
   geom_point() +
   geom_smooth()
 

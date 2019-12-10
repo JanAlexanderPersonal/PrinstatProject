@@ -350,11 +350,12 @@ nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) +
   geom_histogram(color = 'black',
                  fill = 'white',
                  bins=7) +
-  ggtitle("Histogram of number of concurrent species") +
-  labs(x='number of species', 
-       y='Frequency')
+  scale_x_continuous(breaks = seq(1, 8))+
+  scale_y_continuous(breaks = seq(0, 10, 2))+
+  labs(x='Number of species', 
+       y='Number of observations')
 
-tikz(file = 'plot_JointOccurance.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+tikz(file = 'plot_nspeciesDist.tex', standAlone = FALSE, width = figure.width, height = figure.height / 2)
 nspeciesDist
 dev.off()
 
@@ -381,15 +382,38 @@ for(i in 1:8){
 rownames(condprob) <- colnames(bacteria)
 colnames(condprob) <- colnames(bacteria)
 
-round(condprob,  2)
+plot_conditionP_occurance <- round(condprob,  2) %>%
+  melt(.) %>%
+  ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
+  geom_tile(aes(fill = value)) + # background colours are mapped according to the value column
+  geom_text(aes(fill = value, label = value)) + # write the values
+  scale_fill_gradient2(low = "darkred", 
+                       mid = "white", 
+                       high = "midnightblue", 
+                       midpoint = 0.5) + # determine the colour
+  theme(panel.grid.major.x=element_blank(), #no gridlines
+        panel.grid.minor.x=element_blank(), 
+        panel.grid.major.y=element_blank(), 
+        panel.grid.minor.y=element_blank(),
+        panel.background=element_rect(fill="white"), # background=white
+        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
+        plot.title = element_text(size=20,face="bold"),
+        axis.text.y = element_text(size = 12,face = "bold")) + 
+  ggtitle("Conditional probability of occurance") + 
+  theme(legend.title=element_text(face="bold", size=14)) + 
+  scale_x_discrete(name="") +
+  scale_y_discrete(name="") +
+  labs(fill="Conditional\nprobability")
+
+tikz(file = 'plot_conditionP_occurance.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+plot_conditionP_occurance
+dev.off()
 
 #Can we do the same thing with a chi square test?
 
 chisq.test(armpit$Corynebacterium.1>0,armpit$Corynebacterium.2>0)$p.value
 
 #For loops seems not to work.
-
-
 
 Pchisq <- matrix(nrow = 8, ncol = 8)
 

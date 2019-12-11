@@ -496,6 +496,18 @@ armpit %>%
   geom_col(width = 0.5) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.1)
 
+# also
+armpit %>%
+  ggplot(aes(x = Coryne.dichotoom, y = Age)) +
+  geom_boxplot(fill = "grey", width = 0.5) +
+  geom_jitter(width = 0.1)
+
+# or
+armpit %>%
+  ggplot(aes(Age, fill = Coryne.dichotoom)) +
+  geom_density(alpha = 0.3)
+
+
 
 # dit is niet OK
 # cor.test(armpit$Age, armpit$Coryne.dichotoom,

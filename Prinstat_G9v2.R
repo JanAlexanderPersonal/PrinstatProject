@@ -5,7 +5,7 @@
 ######################
 
 figure.width <- 3.2
-figure.height <- 3
+figure.height <- 2.8
 
 #####
 round_df <- function(x, digits = 2) {
@@ -73,8 +73,9 @@ AgeDist <- ggplot(data = armpit, aes(x = Age)) +
   geom_histogram(color = 'black',
                  fill = 'white',
                  binwidth = 5) +
+  scale_y_continuous(breaks = seq(0, 10, 2))+
   labs(x='Patient age [years]', 
-       y='Observation frequency')
+       y='\\# Patients')
 
 # Export table with basic statistics age distribution for report
 stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
@@ -85,7 +86,7 @@ stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
                                                max = max(Age, na.rm = TRUE))
           , summary = FALSE, out = 'table_Age_statistics.tex', rownames = FALSE)
 # Export histogram figure Age distribution
-tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height*0.70)
 AgeDist
 dev.off()
 

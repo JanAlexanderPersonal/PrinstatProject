@@ -442,14 +442,14 @@ corrplot(speciescor, type = "upper",
 dev.off()
 
 
-### steven
+
 
 # dichotomiseren van Coryne abundance
 armpit <- armpit %>%
   mutate(Coryne.dichotoom = factor(ifelse(Corynebacterium.total>50, 1, 0)))
 
 plot_dichotoom <- ggplot(armpit, aes(x=Coryne.dichotoom))+ 
-  geom_histogram(color = 'black',
+  geom_bar(color = 'black',
                  fill = 'blue') +
   ggtitle("dichotoom") 
 tikz(file = 'plot_dichotoom.tex', height = figure.height, width = figure.width, standAlone = FALSE)
@@ -472,13 +472,43 @@ cor.test(armpit$Age, armpit$Corynebacterium.total,
          method = "kendall",
          conf.level = .95)
 
-plot.2 <- ggplot(armpit,aes(x = Age, y = Coryne.dichotoom)) +
+plot_2 <- ggplot(armpit,aes(x = Age, y = as.numeric(Coryne.dichotoom)-1)) +
   geom_point() +
   geom_smooth()
 
 tikz(file = 'plot2.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 plot_2
 dev.off()
+
+# test if the 2 bacterial groups differ in terms of age
+t.test(formula = armpit$Age ~ armpit$Coryne.dichotoom,
+       alternative = "two.sided",
+       var.equal = FALSE,
+       conf.level = 0.95)
+# result: the 2 groups differ in mean age at 5% significance
+
+# plot showing mean age over dichotomised groups + 95% CI
+armpit %>%
+  group_by(Coryne.dichotoom) %>%
+  summarise(count = n(), mean.age = mean(Age), se = sd(Age)/sqrt(count),
+            lower = mean.age - qt(0.975, count - 1) * se,
+            upper = mean.age + qt(0.975, count - 1) * se) %>%
+  ggplot(aes(x = Coryne.dichotoom, y = mean.age)) +
+  geom_col(width = 0.5) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.1)
+
+# also
+armpit %>%
+  ggplot(aes(x = Coryne.dichotoom, y = Age)) +
+  geom_boxplot(fill = "grey", width = 0.5) +
+  geom_jitter(width = 0.1)
+
+# or
+armpit %>%
+  ggplot(aes(Age, fill = Coryne.dichotoom)) +
+  geom_density(alpha = 0.3)
+
+
 
 # dit is niet OK
 # cor.test(armpit$Age, armpit$Coryne.dichotoom,
@@ -503,6 +533,8 @@ cor.test(as.numeric(armpit$Agecat), armpit$Corynebacterium.total,
          method = "kendall",
          conf.level = .95)
 
+# heb m'n twijfels over deze figuur omdat in feite een gemiddelde relabundance wordt getoond, 
+# en da's niet ok denk ik
 tikz(file = 'plot3.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 armpit %>%
   select(Corynebacterium.total, Staphylococcus.total, Agecat) %>%

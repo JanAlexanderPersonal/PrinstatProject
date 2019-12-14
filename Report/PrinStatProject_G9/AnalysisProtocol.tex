@@ -1,0 +1,29 @@
+\subsection{Analysis protocol}
+
+The objective of the analysis is to determine if there is an association between a persons age and the ratio of malodour causing bacteria in the armpit microbiome.
+
+This analysis is performed based on the following protocol steps:
+
+\begin{description}
+    \item[Data Cleaning:] Correct badly encoded observations. Treat missing values (see \ref{sec:DataCleaning}). Since the objective of the analysis is to investigate an association between age and relative bacteria abundance, observations where these variables are missing must be omitted from the data set. Observations with missing BMI or gender values do not necessarily need to be omitted.
+    \item[Data inspection: ] Investigation of the distribution of patient age, gender and Body Mass Index (BMI). 
+    The objective of this step is to identify possible bias in the data. 
+    Distributions can be visualized with boxplots or histograms.
+    \item[Synthesising bacteria genera: ] Sum the different species abundances of both genera to obtain the concentration for both of the genera.
+    \item[Investigate BMI and gender category: ] Apart from the main focus of this work, the patient's age, the data set contains two other variables: BMI and gender.
+    The marginal association between BMI and RGA and between gender and RGA will be investigated with WMW-tests.
+    \item[Make age categories: ] The age was categorized by making two groups with boundary at 40 years old: '$age \leq 40$' and '$age > 40$' (see \ref{sec:AgeCategorical}).
+    \item[Categorical age analysis: ] First, WMW-test is used to investigate a possible difference in Corynebacterium RGA distribution between the age groups\footnote{Since there are only two genera, the relative abundance of Staphylococcus genus is fully characterized with the abundance of Corynebacteria genus.}.
+    \item[Continuous age analysis: ] Study the association between RGA and age as a continuous variable was studied with the Kendall correlation coefficient. The Kendall correlation coefficient was calculated because the data contained many ties and the distribution showed a strong deviation from normality.
+    \todo{ALL}{Vraag: gingen we nu ook relabundance dichotomiseren? Is gebeurd in de code en er zijn enkele grafieken / test uitgevoerd, maar mss is het niet meer nodig? Eenvoud siert mss wel...}
+    \item[Investigation of RSA: ] Relative species abundance was studied both as a binary variable (detected or not) and a quantitative variable. 
+    First, the number of detected species per subject was studied by plotting a histogram. 
+    Next, Fisher exact tests were performed for each pair of species to investigate if certain species were more or less likely to occur together. 
+    Finally, Kendall correlation coefficients were calculated and tested as described higher to explore if relative abundance of one species was correlated with abundance of another species. 
+    No correction for multiple comparisons was done.
+\end{description}
+
+An important note regarding the data: Only relative abundances of bacteria are known. 
+In this data set, no information is available on absolute abundances of the different bacteria species.
+
+Unless further specified, \textit{Statistically significant} should be interpreted as $p \leq 0.05$ in this report.

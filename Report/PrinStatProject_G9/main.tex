@@ -1,0 +1,91 @@
+\documentclass[10pt, a4paper, twocolumn]{article} % 10pt font size (11 and 12 also possible), A4 paper (letterpaper for US letter) and two column layout (remove for one column)
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage[utf8]{inputenc}
+
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+
+\lstset
+{ %Formatting for code in appendix
+    language=R,
+    basicstyle=\small,
+    numbers=left,
+    stepnumber=1,
+    showstringspaces=false,
+    tabsize=1,
+    breaklines=true,
+    breakatwhitespace=false,
+    commentstyle=\color{gray},    % comment style
+  keywordstyle=\color{blue},       % keyword style
+}
+
+\newlist{steps}{enumerate}{1}
+\setlist[steps, 1]{label = \textbf{S\arabic*} :}
+\newcommand\todo[2]{\textcolor{red}{TODO : #1 - #2}}
+
+\input{structure.tex} % Specifies the document structure and loads requires packages
+
+
+%opening
+\title{Principles of Statistical Data analysis: relative bacteria abundance in armpit}
+\author{
+	\authorstyle{Group 9: Jan Alexander\textsuperscript{1}, Paul Morbée \textsuperscript{1}, Steven Wallaert \textsuperscript{1} and Joren Vereken\textsuperscript{1}} % Authors
+	\newline
+	\textsuperscript{1}\institution{1/4 of effort for data analysis and reporting}\\ % 
+}
+
+\begin{document}
+\date{\today}
+\thispagestyle{firstpage}
+\maketitle
+\tableofcontents
+\section*{Abbreviations}
+\begin{tabular}{ l | l }
+\hline
+\hline
+    Abbreviation & \\
+\hline
+ BMI & Body mass index  \\ 
+ IQR & Interquartile range \\
+ KW test & Kruskal-Wallis test \\
+ WMW test & Wilcoxon-Mann-Withney test \\
+ RGA & Relative genus abundance  \\
+ RSA & Relative species abundance \\
+\hline
+\hline
+\end{tabular}
+
+\section{Methods}
+\input{Methods.tex}
+\section{Results}
+\input{Results.tex}
+
+\section{Conclusions and discussions}
+\todo{All}{Discussion}
+In this study, the association between relative bacteria abundance in the armpit microbiome and age was studied. 
+This study provides an indication that the relative abundance of the Corynebacterium genus tends to increase with age.
+No evidence for influence of BMI and gender on the relative genus abundance in the armpit microbiome could be found in the data set.
+
+It is important to remark that the study was realized on a data set which was highly biased towards younger individuals. 
+Although biological insight can be gained, the results should not be generalized to the total population.
+
+\subsection{R code}
+\todo{all}{code cleanup afterwards}
+
+\section{Unused graphs}
+
+
+
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+        \input{images/plot_scatterplot_age_cory.tex}
+    }
+    \caption{Scatterplot of the Corynebacteria abundance}
+    \label{fig:scatterplot_age_cory}
+\end{figure}
+
+\end{document}

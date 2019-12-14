@@ -1,0 +1,91 @@
+Since the armpit microbiome only contains two genera of bacteria, the relative abundance of one defines the other.
+Malodor is caused mainly by Corynebacteria. 
+The analysis focuses on the relative abundance of this genus.
+The abundance of the Staphylococcus genus is simply $100\% - RGA$ of Corynebacteria.
+
+\subsubsection{Basic statistics}
+Table \ref{tab:BacteriaStatistics} contains the basic statistics of the relative distributions of the different bacteria species.
+The RGA shows a strongly skewed distribution. 
+The relative Corynebacteria abundance is very low (only 3.2\%) for at least half of the patients.
+Nevertheless, the armpit microbiome relative concentration of Corynebacteria can be as high as 97\%. This is visualized in figure \ref{fig:boxplot_cory}.
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+       \input{images/boxplot_Cory.tex}
+    }
+    \caption{Boxplot of the relative abundances of the Corynebacteria genus in all 39 observations}
+    \label{fig:boxplot_cory}
+\end{figure}
+
+Within the same genus, the skewness of the data is clear from the second part of the table.
+The \textit{Staphylococcus} species 2, 3 and 4 are completely absent in at least half the samples. Nevertheless, the RSA of \textit{Staphylococcus.2} can reach up to 89.7\%.
+\input{tables/table_Statistics_Bacteria.tex}
+
+\subsubsection{Age as a categorical variable \label{sec:AgeCategorical}}
+Due to the relatively low number of observations, it was chosen to deviate from the original plan to divide the patients in 4 categories divided at 30, 40 en 50 years old.
+This resulted in categories containing a very low number of observations. 
+This would have yielded the power of the statistical tests undesirably low. \todo{All}{Is this correct? Is this the best way to put it? }
+Instead, the patients were split in 2 age categories: \textit{40 and younger} and \textit{over 40}.
+The age of 40 years is chosen because:
+\begin{itemize}
+    \item The mean age of a Belgian is 40.8 years \footnote{Census Belgi\"e, 2011 -  \texttt{https://www.census2011.be/
+    data/fresult/age-avg\_nl.html}}.
+    \item 40 is close to half of the oldest patient age and the mean participant age.
+\end{itemize}
+
+The difference in RGA of Corynebacteria can be observed in figure \ref{fig:BoxplotAge} and from table \ref{tab:CoryStats_AgeCat}.
+For most people of maximum 40 years old in this data set, a lower RGA (<10\%) of Corynebacteria is observed (with 4 exceptions). 
+The distribution of RGA of Corynebacteria for people over 40 years old shows more variability, the IQR is higher.
+The center of this distribution (both the median and the mean) is higher.
+The (two-sided) WMW-test indicates a p-value < 0.01, indicating that $H_0$ (no location shift between category \textit{'40 or younger'} and category \textit{'over 40'}) should be rejected.
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+       \input{images/plot_age.tex}
+    }
+    \caption{Boxplot of Corybacteria RGA per age category. The points indicate the individual observations. Grey markers indicate the mean for both groups.}
+    \label{fig:BoxplotAge}
+\end{figure}
+
+
+Apart from the patient's age, two other patient characteristics are known:
+\begin{enumerate}
+    \item Whether the patient's BMI is over 25.
+    \item The patient's gender.
+\end{enumerate}
+
+\input{tables/table_AgeCat_Cory.tex}
+
+Before concluding we observed a location shift between the relative bacteria genus abundances in the armpit microbiome in different age categories, 
+we wish to investigate the possible influence the two other mentioned parameters may have.
+Secondly, we want to investigate if there is a significant difference between both age categories in BMI or gender composition.
+
+In table \ref{tab:ageDistrAfterDiscr}, the distribution of the patients in the categories is shown.
+\input{tables/table_DistributionAfterAgeDiscr.tex}
+
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+       \input{images/plot_Gender_age.tex}
+    }
+    \caption{Boxplot of Corybacteria RGA for both age category and gender. The points indicate the individual observations. Grey markers indicate the mean for both groups.}
+    \label{fig:BoxplotGenderAge}
+\end{figure}
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+       \input{images/plot_BMI_age.tex}
+    }
+    \caption{Boxplot of Corybacteria RGA for both age category and BMI. The points indicate the individual observations}
+    \label{fig:BoxplotBMIAge}
+\end{figure}
+
+
+\todo{JAL}{Distribution observations (BMI and gender) within age categories --> KW}
+\subsubsection{Age as a continuous variable}
+\todo{Steven, Joren}{Tekst en tabel}
+
+\todo{Paul}{Tekst, code en figuren voor bootstrap methode}

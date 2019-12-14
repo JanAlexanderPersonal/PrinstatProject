@@ -1,0 +1,63 @@
+
+
+Look again at table \ref{tab:BacteriaStatistics}.
+See figure \ref{fig:Boxplot_species}.
+
+\begin{figure*}
+    \centering
+     \resizebox{\hsize}{!}{%
+        \input{images/plot_Boxplot_species.tex}
+    }
+    \caption{Boxplots indicating the variation of relative abuncances of different species in the data}
+    \label{fig:Boxplot_species}
+\end{figure*}
+
+\todo{Paul}{herhalen van theorie in de tekst was eigenlijk specifiek verboden in de opgave. Mag dit wat worden herschreven om de expliciete theorie eruit te laten?}
+In the absence of regression the consideration of correlation seems promising to compare the possible associations between the different genus and species. 
+The study of the literature revealed that there are basically 3 major correlation methods, 
+namely Pearson (r coefficient), Spearman ($\rho$ coefficient) and Kendall ($\tau$ coefficient).
+Pearson’s r  is essentially a measure of linearity and requires the data sets to be continuous. 
+Moreover, for r to be significant, normality of the data sets is assumed. Which clearly is not the case for the different abundances \todo{all}{(QQ-plots tonen ?)}. 
+And if we consider nominal data (the categories of Age for example) Pearson’s r is no longer of use.
+Spearman $\rho$ converts the data sets to ranks which are afterwards subjected to a Pearson correlation test to calculate the $\rho$ value. Spearman’s $\rho$ appears to be sensitive to ties in the data, 
+which is unfortunately the case in the armpit relative abundances (many zeroes). 
+In this case literature points out that Kendall’s $\tau$ is more appropriate as a measure of association. Especially when the number of observations is limited. Kendall’s $\tau$ basically calculates a measure of concordance between couples of data elements from the different sets. 
+So for these reasons we opt for the use of Kendall’s $\tau$ measure.
+To assert correlation between data sets we need to calculate a p-value for the hypothesis test H0: 
+$\tau = 0$ versus Ha: $\tau \neq 0$. If the number of observations is > 10 this can be done by doing a z-test, which we have implemented.
+We have also calculated the CI. As the standard R-functions to calculate correlations (such as cor() or cor.test()) do not provide confidence intervals we obtained these through a bootstrapping procedure.
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+        \input{images/plot_correlation.tex}
+    }
+    \caption{Correlation plot \todo{all}{mss beter letters in zwart en achtergrond van vakken in kleur?}}
+    \label{fig:correlation}
+\end{figure}
+
+In table \ref{fig:correlation} \todo{JAL}{insert table} we depict the significant correlations ($\alpha \leq 0.05$)  in the armpit data frame:  
+
+Generally we observe that, if there is a significant correlation, the Staphilococcus species and Corynebacterium species internally correlate positively. Between the genus and their species, where significant, they associate in a negative way.
+This is explained by the aging process discussed earlier but we have also to consider that the different species add up to 100\% which in itself reinforces the negative correlation between the two genus. 
+This is by definition shown by the almost perfect negative correlation between the totals of the two genus.
+Surprisingly, as a secondary effect, we see that Age and Gender (ordered F, M) positively correlate which confirms that woman are poorly represented in the older Age categories.
+
+
+\begin{figure}
+    \centering
+     \resizebox{\hsize}{!}{%
+        \input{images/plot_nspeciesDist.tex}
+    }
+    \caption{Number of species in individual observations}
+    \label{fig:nspeiciesDist}
+\end{figure}
+
+\begin{figure*}
+    \centering
+     \resizebox{\hsize}{!}{%
+        \input{images/plot_conditionP_occurance.tex}
+    }
+    \caption{conditional Probability of joint occurance}
+    \label{fig:conditionalPjointoccurance}
+\end{figure*}

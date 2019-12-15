@@ -439,9 +439,30 @@ colnames(Fisher_exact_p) <- colnames(bacteria)
 rownames(Fisher_exact_or) <- colnames(bacteria)
 colnames(Fisher_exact_or) <- colnames(bacteria)
 
-round(Fisher_exact_or, 2)
 round(Fisher_exact_p, 2)
 
+plot_Fisher_exact <- round(Fisher_exact_or,  2) %>%
+  melt(.) %>%
+  ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
+  geom_tile(aes(fill = value)) + # background colours are mapped according to the value column
+  geom_text(aes(fill = value, label = value)) + # write the values
+  scale_fill_gradient2(low = "darkred", 
+                       mid = "white", 
+                       high = "midnightblue", 
+                       midpoint = 5) + # determine the colour
+  theme(panel.grid.major.x=element_blank(), #no gridlines
+        panel.grid.minor.x=element_blank(), 
+        panel.grid.major.y=element_blank(), 
+        panel.grid.minor.y=element_blank(),
+        panel.background=element_rect(fill="white"), # background=white
+        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
+        plot.title = element_text(size=20,face="bold"),
+        axis.text.y = element_text(size = 12,face = "bold")) + 
+  # ggtitle("Conditional probability of occurance") + 
+  theme(legend.position = 'none') + 
+  scale_x_discrete(name="") +
+  scale_y_discrete(name="") +
+  labs(fill="Fisher exact\nodds")
 
 #The plot below shows the Kendall correlation coefficients
 

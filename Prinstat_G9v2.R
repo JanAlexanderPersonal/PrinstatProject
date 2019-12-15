@@ -439,17 +439,28 @@ colnames(Fisher_exact_p) <- colnames(bacteria)
 rownames(Fisher_exact_or) <- colnames(bacteria)
 colnames(Fisher_exact_or) <- colnames(bacteria)
 
-round(Fisher_exact_p, 2)
+Fisher_exact_p <- Fisher_exact_p %>% 
+  melt(.) %>% 
+  mutate(significant = factor(ifelse(value < 0.05, TRUE, FALSE))) %>%
+  rename(p.value = value)
 
-plot_Fisher_exact <- round(Fisher_exact_or,  2) %>%
+str(Fisher_exact_p)
+
+Fisher_exact_or <- round(Fisher_exact_or,  2) %>% 
   melt(.) %>%
+  rename(odds = value) %>%
+  mutate(significant = Fisher_exact_p$significant)
+
+head(Fisher_exact_or)
+
+plot_Fisher_exact <- Fisher_exact_or %>%
   ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
-  geom_tile(aes(fill = value)) + # background colours are mapped according to the value column
-  geom_text(aes(fill = value, label = value)) + # write the values
+  geom_tile(aes(fill = odds)) + # background colours are mapped according to the value column
+  geom_text(aes(size = significant, label = odds)) + # write the values
   scale_fill_gradient2(low = "darkred", 
                        mid = "white", 
                        high = "midnightblue", 
-                       midpoint = 5) + # determine the colour
+                       midpoint = 10) + # determine the colour
   theme(panel.grid.major.x=element_blank(), #no gridlines
         panel.grid.minor.x=element_blank(), 
         panel.grid.major.y=element_blank(), 
@@ -463,6 +474,11 @@ plot_Fisher_exact <- round(Fisher_exact_or,  2) %>%
   scale_x_discrete(name="") +
   scale_y_discrete(name="") +
   labs(fill="Fisher exact\nodds")
+
+tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
+plot_Fisher_exact
+dev.off()
+
 
 #The plot below shows the Kendall correlation coefficients
 

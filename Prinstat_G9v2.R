@@ -417,19 +417,30 @@ chisq.test(armpit$Corynebacterium.1>0,armpit$Corynebacterium.2>0)$p.value
 
 #For loops seems not to work.
 
-Pchisq <- matrix(nrow = 8, ncol = 8)
-
+bacteria_table <- matrix(nrow = 2, ncol = 2)
+Fisher_exact_p <- matrix(nrow = 8, ncol = 8)
+Fisher_exact_or <- matrix(nrow = 8, ncol = 8)
 
 for(i in 1:8){
   for(j in 1:8){
-    Pchisq[i,j] <- chisq.test(bacteria[i]>0,bacteria[j]>0)$p.value
+    bacteria_table[1,1] <- sum(bacteria[i]>0)
+    bacteria_table[1,2] <- sum(bacteria[i]==0)
+    bacteria_table[2,1] <- sum(bacteria[j]>0)
+    bacteria_table[2,2] <- sum(bacteria[j]==0)
+    ifelse(bacteria_table == 0, bacteria_table <- bacteria_table +1, bacteria_table <- bacteria_table)
+    Fisher_exact_p[i,j] <- fisher.test(bacteria_table)$p.value
+    Fisher_exact_or[i,j] <- fisher.test(bacteria_table)$estimate
   }
 }
+  
 
-rownames(Pchisq) <- colnames(bacteria)
-colnames(Pchisq) <- colnames(bacteria)
+rownames(Fisher_exact_p) <- colnames(bacteria)
+colnames(Fisher_exact_p) <- colnames(bacteria)
+rownames(Fisher_exact_or) <- colnames(bacteria)
+colnames(Fisher_exact_or) <- colnames(bacteria)
 
-round(Pchisq, 2)
+round(Fisher_exact_or, 2)
+round(Fisher_exact_p, 2)
 
 
 #The plot below shows the Kendall correlation coefficients

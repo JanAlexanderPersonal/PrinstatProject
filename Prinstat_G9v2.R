@@ -121,6 +121,19 @@ measures_genus <- genus_armpit %>%
             max = max(Abundance, na.rm = TRUE))
 stargazer(round_df(rbind(measures_genus,measures_species), 1), summary = FALSE, nobs = FALSE, out='table_Statistics_Bacteria.tex', align = FALSE, rownames = FALSE)
 
+bacteria_armpit <- armpit %>% gather(Bacteria, Abundance, c(Corynebacterium.1:Corynebacterium.4,
+                                                            Corynebacterium.total,
+                                                            Staphylococcus.1:Staphylococcus.4,
+                                                            Staphylococcus.total)) %>%
+  mutate(Genus = ifelse(grepl("Cory", Bacteria), "Corynebacterium", "Staphyloccus"))
+
+measures_bacteria <- bacteria_armpit %>%
+  group_by(Bacteria) %>%
+  summarize(mean = mean(Abundance, na.rm = TRUE),
+            median = median(Abundance, na.rm = TRUE),
+            sd = sd(Abundance, na.rm = TRUE),
+            min = min(Abundance, na.rm = TRUE),
+            max = max(Abundance, na.rm = TRUE))
 
 #The large differences between means and medians indicate that the values are not normally distributed. 
 # This was further studied by plotting a boxplot.
@@ -174,6 +187,18 @@ tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width
 Boxplot_species
 dev.off()
   
+Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
+  geom_boxplot(aes(fill = Genus)) +
+  scale_fill_manual(values=c("gray", "white")) +
+  geom_point(data = measures_bacteria, 
+             aes(x = Bacteria, y=`mean`), shape = 6, size = 3) +
+  coord_flip() +
+  theme(legend.position = "bottom") +
+  labs(x="Bacteria",
+       y="Relative bacteria abundance (\\%)") +
+  guides(color = guide_legend(reverse = FALSE), 
+         shape = guide_legend(title = "Mean"))
+
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
 

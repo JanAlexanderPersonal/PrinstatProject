@@ -68,7 +68,7 @@ stargazer(tab_BMI_Gender %>%
             spread(data = ., key = BMI, value = Observations), 
           summary = FALSE, nobs = TRUE, out='table_Observations_BMI_Gender.tex')
 
-# AgeDist: histogram age distribution in dataset
+# AgeDist: histogram of age distribution in dataset
 AgeDist <- ggplot(data = armpit, aes(x = Age)) + 
   geom_histogram(color = 'black',
                  fill = 'white',
@@ -92,7 +92,7 @@ dev.off()
 
 #Mainly young subjects participated in the study. The age distribution was not normal.
 
-# EXPLORE THE VARIABLE #####
+# EXPLORE THE VARIABLE OF INTEREST #####
 # Explore the variables of interest (Relative abundance of bacteria species)
 # Basic measures of location and spread are shown below and exported to a table for the report
 species_armpit <- armpit %>% gather(Species, Abundance, Corynebacterium.1:Staphylococcus.4) %>%
@@ -121,19 +121,7 @@ stargazer(round_df(rbind(measures_genus,measures_species), 1), summary = FALSE, 
 
 
 #The large differences between means and medians indicate that the values are not normally distributed. 
-# This was further studied by plotting histograms.
-Corynebacterium.totalDist <- ggplot(data = armpit, aes(x = Corynebacterium.total)) + 
-  geom_histogram(color = 'black',
-                 fill = 'white',
-                 bins = 10) +
-  labs(x='Corynebacterium genus relative abundance [\\%]', 
-       y='Frequency')
-
-tikz(file = 'plot_Coryne_totalDist.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-Corynebacterium.totalDist
-dev.off()
-
-# TODO: What do we prefer: boxplot or histogram?
+# This was further studied by plotting a boxplot.
 
 Corynebacterium.totalDist <- ggplot(data = armpit, aes(y = Corynebacterium.total)) + 
   geom_boxplot(notch = FALSE) + xlab('Relative abundance [\\%]')+
@@ -166,15 +154,7 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
 SpeciesDist
 
 
-# Histogram and boxplot indicating the distribution of the relative species abundance
-# TODO: keep 1 of 2
-Histogram_species <- ggplot(species_armpit, aes(Abundance)) +
-  geom_histogram(bins = 20) +
-  geom_vline(data = measures_species, aes(xintercept = mean), color="blue") +
-  geom_vline(data = measures_species, aes(xintercept = median), color = "red") +
-  facet_wrap(~Species, nrow = 2, scales = "free") +
-  labs(x="Relative species abundance (%)",
-       y="Count")
+# Boxplot indicating the distribution of the relative species abundance
 
 Boxplot_species <- ggplot(species_armpit, aes(x = Species, y = Abundance)) +
   geom_boxplot(aes(fill = Genus)) +

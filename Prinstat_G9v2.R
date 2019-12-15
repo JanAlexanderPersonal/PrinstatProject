@@ -17,6 +17,8 @@ round_df <- function(x, digits = 2) {
   x
 }
 
+source("tau_cor_conf.R")
+
 # Load packages ####
 
 # Load relevant packages:
@@ -261,33 +263,10 @@ armpit %>%
 # Protocol: a scatterplot with loess curve was made of the relative abundance of Corynebacterium by age. 
 # Pearson and Spearman correlation coefficients were calculated and tested.
 
-# # Scatterplot to get a first idea how relative abundance of Corynebacterium evolves with age
-# corbyage <- ggplot(armpit, aes(x=Age, y=Corynebacterium.total)) + 
-#   geom_point()+
-#   geom_smooth() + # Ziet er mooi uit, maar is dit ook 'correct' (aanvaardbaar)
-#   ggtitle('relative abundance of Corynebacterium vs subject age') +
-#   labs(x = 'Age [years]', 
-#        y = 'Relative abundance of Corynebacterium') 
-# tikz(file = 'plot_scatterplot_Age_corby.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-# corbyage
-# dev.off()
-# 
-# 
-# # What does the correlation function in R actually deliver as an output?
-# cor(armpit$Age, armpit$Corynebacterium.total, method = "pearson")
-# cor(armpit$Age, armpit$Corynebacterium.total, method = "spearman")
-# 
-# cor.test(armpit$Age, armpit$Corynebacterium.total, 
-#          alternative = c('two.sided'),
-#          method = 'pearson',
-#          conf.level = 0.95)
-
 cor.test(armpit$Age, armpit$Corynebacterium.total, 
          alternative = c('two.sided'),
          method = 'kendall',
          conf.level = 0.95)
-
-source("tau_cor_conf.R")
 
 tau_cor_conf(armpit, "Age", "Corynebacterium.total")
 
@@ -342,13 +321,9 @@ nspeciesDist
 dev.off()
 
 #In one subject, only 1 species was found. None of the subjects tested positive on all 8 species.
-
-
 #The table below shows the conditional probabilities of detecting a species when another species was detected
 
 mean(armpit$Corynebacterium.1[armpit$Corynebacterium.2>0]>0)
-
-condprob <- matrix(nrow = 8, ncol = 8)
 
 armpit %>%
   select(Corynebacterium.1:Corynebacterium.4, Staphylococcus.1:Staphylococcus.4) -> bacteria

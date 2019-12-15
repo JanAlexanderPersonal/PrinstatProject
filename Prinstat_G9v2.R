@@ -192,8 +192,8 @@ summary = FALSE, nobs = TRUE, rownames = FALSE, out='table_DistributionAfterAgeD
 # In subjects older than 40 years there was a lot of variation. 
 plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) + 
   geom_boxplot(outlier.alpha = 0)+
-  geom_point(position = position_jitter(), aes(shape = Agecat)) + 
-  stat_summary(fun.y = mean, aes(shape = Agecat) ,geom="point",color = 'darkgray', size=3, position = position_dodge()) + 
+  geom_point(position = position_jitter(width = 0.25), aes(shape = Agecat)) + 
+  stat_summary(fun.y = mean, aes(shape = Agecat) ,geom="point",color = 'darkgray', size=3, position = position_dodge(width = 0.1)) + 
   theme(legend.position = "bottom") + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
   xlab('Age category')

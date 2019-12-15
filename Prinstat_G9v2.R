@@ -483,13 +483,34 @@ dev.off()
 #The plot below shows the Kendall correlation coefficients
 
 speciescor <- cor(armpit[ ,c(1:8)],method="kendall")
-round(speciescor,2)
+
+plot_correlation <- round(speciescor, 2) %>%
+  melt(.) %>%
+  rename(corr.coeff = value) %>%
+  ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
+  geom_tile(aes(fill = corr.coeff)) + # background colours are mapped according to the value column
+  geom_text(aes(label = corr.coeff)) + # write the values
+  scale_fill_gradient2(low = "darkred", 
+                       mid = "white", 
+                       high = "midnightblue", 
+                       midpoint = 0) + # determine the colour
+  theme(panel.grid.major.x=element_blank(), #no gridlines
+        panel.grid.minor.x=element_blank(), 
+        panel.grid.major.y=element_blank(), 
+        panel.grid.minor.y=element_blank(),
+        panel.background=element_rect(fill="white"), # background=white
+        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
+        plot.title = element_text(size=20,face="bold"),
+        axis.text.y = element_text(size = 12,face = "bold")) + 
+  # ggtitle("Conditional probability of occurance") + 
+  theme(legend.position = 'none') + 
+  scale_x_discrete(name="") +
+  scale_y_discrete(name="") +
+  labs(fill="correlation coefficients")
+
 tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
-corrplot(speciescor, type = "upper",  
-         tl.col = "black", tl.srt = 45,method="number")
+  plot_correlation
 dev.off()
-
-
 
 
 # dichotomiseren van Coryne abundance

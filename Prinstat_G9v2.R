@@ -373,7 +373,8 @@ head(Fisher_exact_or)
 plot_Fisher_exact <- Fisher_exact_or %>%
   ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
   geom_tile(aes(fill = odds)) + # background colours are mapped according to the value column
-  geom_text(aes(size = significant, label = odds)) + # write the values
+  geom_text(aes(alpha = significant, label = odds)) + # write the values
+  scale_alpha_manual(values = c(0.4, 1))+
   scale_fill_gradient2(low = "darkred", 
                        mid = "white", 
                        high = "midnightblue", 
@@ -392,7 +393,7 @@ plot_Fisher_exact <- Fisher_exact_or %>%
   scale_y_discrete(name="") +
   labs(fill="Fisher exact\nodds")
 
-tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
+tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = 8, height = 8)
 plot_Fisher_exact
 dev.off()
 

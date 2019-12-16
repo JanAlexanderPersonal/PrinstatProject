@@ -76,8 +76,8 @@ AgeDist <- ggplot(data = armpit, aes(x = Age)) +
                  fill = 'white',
                  binwidth = 5) +
   scale_y_continuous(breaks = seq(0, 10, 2))+
-  labs(x='Patient age [years]', 
-       y='\\# Patients')
+  labs(x='Subject age [years]', 
+       y='\\# Subjects')
 
 # Export table with basic statistics age distribution for report
 stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
@@ -91,6 +91,7 @@ stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
 tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height*0.70)
 AgeDist
 dev.off()
+ggsave(file="plot_AgeDistribution.png", plot=AgeDist, width=10, height=8)
 
 #Mainly young subjects participated in the study. The age distribution was not normal.
 
@@ -182,10 +183,6 @@ Boxplot_species <- ggplot(species_armpit, aes(x = Species, y = Abundance)) +
        y="Relative species abundance (\\%)") +
   guides(color = guide_legend(reverse = FALSE), 
          shape = guide_legend(title = "Mean"))
-
-tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
-Boxplot_species
-dev.off()
   
 Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
   geom_boxplot(aes(fill = Genus)) +
@@ -198,6 +195,11 @@ Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
        y="Relative bacteria abundance (\\%)") +
   guides(color = guide_legend(reverse = FALSE), 
          shape = guide_legend(title = "Mean"))
+
+tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
+  Boxplot_bacteria
+dev.off()
+ggsave(file="plot_Boxplot_species.png", plot=Boxplot_bacteria, width=10, height=8)
 
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
@@ -330,7 +332,10 @@ plot_heatmap_age_cory <-ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) 
 #First step: look how many species occur together
 
 armpit$nspecies <-  rowSums(armpit[,c(1:8)]>0)
-summary(armpit)
+cor.test(armpit$Age, armpit$Corynebacterium.total, 
+         alternative = c('two.sided'),
+         method = 'kendall',
+         conf.level = 0.95)
 
 nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) + 
   geom_histogram(color = 'black',
@@ -421,18 +426,44 @@ plot_Fisher_exact <- Fisher_exact_or %>%
 tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = 8, height = 8)
 plot_Fisher_exact
 dev.off()
-
+ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=10, height=8)
 
 #The plot below shows the Kendall correlation coefficients
+speciescor_p <- matrix(nrow = 8, ncol = 8)
+speciescor_tau <- matrix(nrow = 8, ncol = 8)
 
-speciescor <- cor(armpit[ ,c(1:8)],method="kendall")
+for(i in 1:8){
+  for(j in 1:8){
+    test <- cor.test(bacteria[,i], bacteria[, j], 
+                     method = 'kendall', 
+                     conf.level = 0.95, 
+                     alternative = 'two.sided')
+    speciescor_p[i,j] <- test$p.value
+    speciescor_tau[i,j] <- test$estimate
+  }
+}
 
-plot_correlation <- round(speciescor, 2) %>%
+
+rownames(speciescor_p) <- colnames(speciescor_p) <- colnames(bacteria)
+rownames(speciescor_tau) <- colnames(speciescor_tau) <- colnames(bacteria)
+
+speciescor_p <- speciescor_p %>% 
+  melt(.) %>% 
+  mutate(significant = factor(ifelse(value < 0.05, TRUE, FALSE))) %>%
+  rename(p.value = value)
+
+str(speciescor_p)
+
+speciescor_tau <- round(speciescor_tau,  2) %>% 
   melt(.) %>%
   rename(corr.coeff = value) %>%
+  mutate(significant = speciescor_p$significant)
+
+
+plot_correlation <- speciescor_tau %>%
   ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
   geom_tile(aes(fill = corr.coeff)) + # background colours are mapped according to the value column
-  geom_text(aes(label = corr.coeff)) + # write the values
+  geom_text(aes(alpha = significant, label = corr.coeff)) + # write the values
   scale_fill_gradient2(low = "darkred", 
                        mid = "white", 
                        high = "midnightblue", 
@@ -454,7 +485,7 @@ plot_correlation <- round(speciescor, 2) %>%
 tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
   plot_correlation
 dev.off()
-
+ggsave(file="plot_correlation.png", plot=plot_correlation, width=10, height=8)
 
 # dichotomiseren van Coryne abundance
 armpit <- armpit %>%

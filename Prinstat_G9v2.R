@@ -91,7 +91,7 @@ stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
 tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height*0.70)
 AgeDist
 dev.off()
-ggsave(file="plot_AgeDistribution.png", plot=AgeDist, width=10, height=8)
+
 
 #Mainly young subjects participated in the study. The age distribution was not normal.
 
@@ -199,7 +199,7 @@ Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
 tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
   Boxplot_bacteria
 dev.off()
-ggsave(file="plot_Boxplot_species.png", plot=Boxplot_bacteria, width=10, height=8)
+
 
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
 #For each species, abundance did not follow a normal distribution. Mean and median appear to be poor measures of location. 
@@ -266,6 +266,7 @@ plot_Gender_age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill 
 tikz(file = 'plot_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_Age
 dev.off()
+
 
 tikz(file = 'plot_BMI_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_BMI_Age
@@ -426,7 +427,7 @@ plot_Fisher_exact <- Fisher_exact_or %>%
 tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = 8, height = 8)
 plot_Fisher_exact
 dev.off()
-ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=10, height=8)
+
 
 #The plot below shows the Kendall correlation coefficients
 speciescor_p <- matrix(nrow = 8, ncol = 8)
@@ -484,7 +485,7 @@ plot_correlation <- speciescor_tau %>%
 tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
   plot_correlation
 dev.off()
-ggsave(file="plot_correlation.png", plot=plot_correlation, width=10, height=8)
+
 
 # dichotomiseren van Coryne abundance
 armpit <- armpit %>%
@@ -585,3 +586,9 @@ armpit %>%
   geom_col(position = "fill")
 dev.off()
 
+
+ggsave(file="plot_Boxplot_species.png", plot=Boxplot_bacteria, width=10, height=4)
+ggsave(file="plot_correlation.png", plot=plot_correlation, width=6, height=6)
+ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=6, height=6)
+ggsave(file="plot_AgeDistribution.png", plot=AgeDist, width=10, height=4)
+ggsave(file="plot_Age.png", plot=plot_Age, width=10, height=4)

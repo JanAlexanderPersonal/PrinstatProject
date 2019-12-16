@@ -405,10 +405,10 @@ plot_Fisher_exact <- Fisher_exact_or %>%
   geom_tile(aes(fill = odds)) + # background colours are mapped according to the value column
   geom_text(aes(alpha = significant, label = odds)) + # write the values
   scale_alpha_manual(values = c(0.4, 1))+
-  scale_fill_gradient2(low = "darkred", 
-                       mid = "white", 
-                       high = "midnightblue", 
-                       midpoint = 10) + # determine the colour
+  scale_fill_gradient2(low = "white", 
+                       mid = "midnightblue", 
+                       high = "blue", 
+                       midpoint = 20) + # determine the colour
   theme(panel.grid.major.x=element_blank(), #no gridlines
         panel.grid.minor.x=element_blank(), 
         panel.grid.major.y=element_blank(), 
@@ -431,7 +431,6 @@ ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=10, height=8)
 #The plot below shows the Kendall correlation coefficients
 speciescor_p <- matrix(nrow = 8, ncol = 8)
 speciescor_tau <- matrix(nrow = 8, ncol = 8)
-
 for(i in 1:8){
   for(j in 1:8){
     test <- cor.test(bacteria[,i], bacteria[, j], 

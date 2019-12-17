@@ -77,7 +77,8 @@ AgeDist <- ggplot(data = armpit, aes(x = Age)) +
                  binwidth = 5) +
   scale_y_continuous(breaks = seq(0, 10, 2))+
   labs(x='Subject age [years]', 
-       y='\\# Subjects')
+       y='# Subjects') +
+  theme(axis.title=element_text(size=14)) 
 
 # Export table with basic statistics age distribution for report
 stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
@@ -88,9 +89,9 @@ stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
                                                max = max(Age, na.rm = TRUE))
           , summary = FALSE, out = 'table_Age_statistics.tex', rownames = FALSE)
 # Export histogram figure Age distribution
-tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height*0.70)
-AgeDist
-dev.off()
+##tikz(file = 'plot_AgeDistribution.tex', standAlone = FALSE, width = figure.width, height = figure.height*0.70)
+#AgeDist
+#dev.off()
 
 
 #Mainly young subjects participated in the study. The age distribution was not normal.
@@ -146,7 +147,7 @@ Corynebacterium.totalDist <- ggplot(data = armpit, aes(y = Corynebacterium.total
         axis.ticks.y = element_blank()) + 
   coord_flip()
   
-tikz('boxplot_Cory.tex', width = 4, height = 1.2)
+#tikz('boxplot_Cory.tex', width = 4, height = 1.2)
 Corynebacterium.totalDist
 dev.off()
 
@@ -164,7 +165,8 @@ SpeciesDist <- ggplot(species_armpit, aes(Species, Abundance)) +
   xlab("Species")+
   theme(axis.text.x = element_text(angle = 45))+
   annotate(geom="text", x=7, y=80, label="median", color="red")+
-  annotate(geom="text", x=7, y=60, label="mean", color="blue")
+  annotate(geom="text", x=7, y=60, label="mean", color="blue") + 
+  theme(axis.title=element_text(size=14)) 
 
 # TODO: I do not find this graph very clear. Please elaborate
 SpeciesDist
@@ -178,7 +180,7 @@ Boxplot_species <- ggplot(species_armpit, aes(x = Species, y = Abundance)) +
   geom_point(data = measures_species, 
              aes(x = Species, y=`mean`), shape = 6, size = 3) +
   coord_flip() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom", axis.text.y = element_text(size = 14)) +
   labs(x="Species",
        y="Relative species abundance (\\%)") +
   guides(color = guide_legend(reverse = FALSE), 
@@ -192,13 +194,15 @@ Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
   coord_flip() +
   theme(legend.position = "bottom") +
   labs(x="Bacteria",
-       y="Relative bacteria abundance (\\%)") +
+       y="Relative bacteria abundance (%)") +
   guides(color = guide_legend(reverse = FALSE), 
-         shape = guide_legend(title = "Mean"))
+         shape = guide_legend(title = "Mean")) +
+  theme(axis.title=element_text(size=16), 
+        axis.text.y = element_text(size = 14)) 
 
-tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
-  Boxplot_bacteria
-dev.off()
+###tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
+#  Boxplot_bacteria
+#dev.off()
 
 
 #The figure shows that Staphylococcus 1 was the most common species. Other species were often absent in subjects.
@@ -223,9 +227,10 @@ plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) +
   geom_boxplot(outlier.alpha = 0)+
   geom_point(position = position_jitter(width = 0.25), aes(shape = Agecat)) + 
   stat_summary(fun.y = mean, aes(shape = Agecat) ,geom="point",color = 'darkgray', size=3, position = position_dodge(width = 0.1)) + 
-  theme(legend.position = "bottom") + 
-  ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
-  xlab('Age category')
+  theme(legend.position = "none", axis.title=element_text(size=14)) + 
+  ylab('Relative abundance \n of Corynebacterium genus [%]') + 
+  xlab('Age category') + 
+  theme(axis.title=element_text(size=16))
 
 # Summary table per age category
 tableAgeCat <- armpit %>%
@@ -263,16 +268,16 @@ plot_Gender_age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total, fill 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
   xlab('Age category') + scale_fill_manual(values=c("white", "lightgray"))
 
-tikz(file = 'plot_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
-plot_Age
-dev.off()
+###tikz(file = 'plot_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+#plot_Age
+#dev.off()
 
 
-tikz(file = 'plot_BMI_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+##tikz(file = 'plot_BMI_Age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_BMI_Age
 dev.off()
 
-tikz(file = 'plot_Gender_age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
+##tikz(file = 'plot_Gender_age.tex', standAlone = FALSE, width = figure.width, height = figure.height)
 plot_Gender_age
 dev.off()
 
@@ -312,7 +317,7 @@ plot_scatterplot_age_cory <- ggplot(armpit, aes(x = Age, y = Corynebacterium.tot
   xlab('Age [years]') + 
   scale_color_manual(values=c("darkgray", "black"))
 
-tikz(file = 'plot_scatterplot_age_cory.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
+#tikz(file = 'plot_scatterplot_age_cory.tex', standAlone = FALSE, width = figure.width*2, height = figure.height*2)
 plot_scatterplot_age_cory
 dev.off()
 
@@ -347,7 +352,7 @@ nspeciesDist <- ggplot(data = armpit, aes(x = nspecies)) +
   labs(x='\\# species', 
        y='\\# observations')
 
-tikz(file = 'plot_nspeciesDist.tex', standAlone = FALSE, width = figure.width, height = figure.height / 2)
+#tikz(file = 'plot_nspeciesDist.tex', standAlone = FALSE, width = figure.width, height = figure.height / 2)
 nspeciesDist
 dev.off()
 
@@ -387,7 +392,10 @@ colnames(Fisher_exact_p) <- colnames(bacteria)
 rownames(Fisher_exact_or) <- colnames(bacteria)
 colnames(Fisher_exact_or) <- colnames(bacteria)
 
-Fisher_exact_p <- Fisher_exact_p %>% 
+Fisher_exact_p <- Fisher_exact_p[c(1,2,3,4,6,7,8), ]
+Fisher_exact_or <- Fisher_exact_or[c(1,2,3,4,6,7,8), ]
+
+Fisher_exact_p <- Fisher_exact_p %>%
   melt(.) %>% 
   mutate(significant = factor(ifelse(value < 0.05, TRUE, FALSE))) %>%
   rename(p.value = value)
@@ -406,25 +414,26 @@ plot_Fisher_exact <- Fisher_exact_or %>%
   geom_tile(aes(fill = odds)) + # background colours are mapped according to the value column
   geom_text(aes(alpha = significant, label = odds)) + # write the values
   scale_alpha_manual(values = c(0.4, 1))+
-  scale_fill_gradient2(low = "white", 
-                       mid = "midnightblue", 
-                       high = "blue", 
-                       midpoint = 20) + # determine the colour
+  scale_fill_gradient2(low = "midnightblue", 
+                       mid = "white", 
+                       high = "darkred", 
+                       midpoint = 3) + # determine the colour
   theme(panel.grid.major.x=element_blank(), #no gridlines
         panel.grid.minor.x=element_blank(), 
         panel.grid.major.y=element_blank(), 
         panel.grid.minor.y=element_blank(),
         panel.background=element_rect(fill="white"), # background=white
-        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
-        plot.title = element_text(size=20,face="bold"),
-        axis.text.y = element_text(size = 12,face = "bold")) + 
-  # ggtitle("Conditional probability of occurance") + 
+        axis.text.x = element_text(angle=45, hjust = 1,vjust=1,size = 14),
+        plot.title = element_text(size=16),
+        axis.text.y = element_text(size = 14)) + 
+  ggtitle("Fisher-exact: Odds Ratio") +
   theme(legend.position = 'none') + 
   scale_x_discrete(name="") +
   scale_y_discrete(name="") +
   labs(fill="Fisher exact\nodds")
 
-tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = 8, height = 8)
+
+#tikz(file = 'plot_Fisher_exact.tex', standAlone = FALSE, width = 8, height = 8)
 plot_Fisher_exact
 dev.off()
 
@@ -464,25 +473,25 @@ plot_correlation <- speciescor_tau %>%
   ggplot( aes(Var1, Var2)) + # x and y axes => Var1 and Var2
   geom_tile(aes(fill = corr.coeff)) + # background colours are mapped according to the value column
   geom_text(aes(alpha = significant, label = corr.coeff)) + # write the values
-  scale_fill_gradient2(low = "darkred", 
+  scale_fill_gradient2(low = "midnightblue", 
                        mid = "white", 
-                       high = "midnightblue", 
+                       high = "darkred", 
                        midpoint = 0) + # determine the colour
   theme(panel.grid.major.x=element_blank(), #no gridlines
         panel.grid.minor.x=element_blank(), 
         panel.grid.major.y=element_blank(), 
         panel.grid.minor.y=element_blank(),
         panel.background=element_rect(fill="white"), # background=white
-        axis.text.x = element_text(angle=90, hjust = 1,vjust=1,size = 12,face = "bold"),
-        plot.title = element_text(size=20,face="bold"),
-        axis.text.y = element_text(size = 12,face = "bold")) + 
-  # ggtitle("Conditional probability of occurance") + 
+        axis.text.x = element_text(angle=45, hjust = 1,vjust=1,size = 14),
+        plot.title = element_text(size=16),
+        axis.text.y = element_text(size = 14)) + 
+  ggtitle("Correlation (Kendall)") + 
   theme(legend.position = 'none') + 
   scale_x_discrete(name="") +
   scale_y_discrete(name="") +
   labs(fill="correlation coefficients")
 
-tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
+#tikz(file = 'plot_correlation.tex', standAlone = FALSE, width = 8, height = 8)
   plot_correlation
 dev.off()
 
@@ -495,7 +504,7 @@ plot_dichotoom <- ggplot(armpit, aes(x=Coryne.dichotoom))+
   geom_bar(color = 'black',
                  fill = 'blue') +
   ggtitle("dichotoom") 
-tikz(file = 'plot_dichotoom.tex', height = figure.height, width = figure.width, standAlone = FALSE)
+#tikz(file = 'plot_dichotoom.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 plot_dichotoom
 dev.off()
 
@@ -506,7 +515,7 @@ plot_1 <- ggplot(armpit,aes(x = Age, y = Corynebacterium.total)) +
   geom_point() +
   geom_smooth()
 
-tikz(file = 'plot1.tex', height = figure.height, width = figure.width, standAlone = FALSE)
+#tikz(file = 'plot1.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 plot_1
 dev.off()
 
@@ -519,7 +528,7 @@ plot_2 <- ggplot(armpit,aes(x = Age, y = as.numeric(Coryne.dichotoom)-1)) +
   geom_point() +
   geom_smooth()
 
-tikz(file = 'plot2.tex', height = figure.height, width = figure.width, standAlone = FALSE)
+#tikz(file = 'plot2.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 plot_2
 dev.off()
 
@@ -578,7 +587,7 @@ cor.test(as.numeric(armpit$Agecat), armpit$Corynebacterium.total,
 
 # heb m'n twijfels over deze figuur omdat in feite een gemiddelde relabundance wordt getoond, 
 # en da's niet ok denk ik
-tikz(file = 'plot3.tex', height = figure.height, width = figure.width, standAlone = FALSE)
+#tikz(file = 'plot3.tex', height = figure.height, width = figure.width, standAlone = FALSE)
 armpit %>%
   select(Corynebacterium.total, Staphylococcus.total, Agecat) %>%
   pivot_longer(1:2, names_to = "Bacterium", values_to = "relabundance") %>%
@@ -587,8 +596,8 @@ armpit %>%
 dev.off()
 
 
-ggsave(file="plot_Boxplot_species.png", plot=Boxplot_bacteria, width=10, height=4)
-ggsave(file="plot_correlation.png", plot=plot_correlation, width=6, height=6)
-ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=6, height=6)
-ggsave(file="plot_AgeDistribution.png", plot=AgeDist, width=10, height=4)
-ggsave(file="plot_Age.png", plot=plot_Age, width=10, height=4)
+ggsave(file="plot_Boxplot_species.png", plot=Boxplot_bacteria, width=10, height=5)
+ggsave(file="plot_correlation.png", plot=plot_correlation, width=5.5, height=5.5)
+ggsave(file="plot_Fisher_exact.png", plot=plot_Fisher_exact, width=5.5, height=5.5)
+ggsave(file="plot_AgeDistribution.png", plot=AgeDist, width=8, height=5)
+ggsave(file="plot_Age.png", plot=plot_Age, width=8, height=5)

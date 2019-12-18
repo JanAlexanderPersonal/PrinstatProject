@@ -376,13 +376,10 @@ Fisher_exact_or <- matrix(nrow = 8, ncol = 8)
 
 for(i in 1:8){
   for(j in 1:8){
-    bacteria_table[1,1] <- sum(bacteria[i]>0)
-    bacteria_table[1,2] <- sum(bacteria[i]==0)
-    bacteria_table[2,1] <- sum(bacteria[j]>0)
-    bacteria_table[2,2] <- sum(bacteria[j]==0)
-    ifelse(bacteria_table == 0, bacteria_table <- bacteria_table +1, bacteria_table <- bacteria_table)
-    Fisher_exact_p[i,j] <- fisher.test(bacteria_table)$p.value
-    Fisher_exact_or[i,j] <- fisher.test(bacteria_table)$estimate
+    FT <- fisher.test(x = factor(ifelse(bacteria[i]>0,1,0), levels = c(1,0)), 
+                      y =factor(ifelse(bacteria[j]>0,1,0), levels = c(1,0)))
+    Fisher_exact_p[i,j] <- FT$p.value
+    Fisher_exact_or[i,j] <- FT$estimate
   }
 }
   
@@ -392,8 +389,10 @@ colnames(Fisher_exact_p) <- colnames(bacteria)
 rownames(Fisher_exact_or) <- colnames(bacteria)
 colnames(Fisher_exact_or) <- colnames(bacteria)
 
-Fisher_exact_p <- Fisher_exact_p[c(1,2,3,4,6,7,8), ]
-Fisher_exact_or <- Fisher_exact_or[c(1,2,3,4,6,7,8), ]
+Fisher_exact_or
+
+Fisher_exact_p <- Fisher_exact_p[c(1,2,3,4,6,7,8), c(1,2,3,4,6,7,8)]
+Fisher_exact_or <- Fisher_exact_or[c(1,2,3,4,6,7,8), c(1,2,3,4,6,7,8)]
 
 Fisher_exact_p <- Fisher_exact_p %>%
   melt(.) %>% 

@@ -301,6 +301,21 @@ cor.test(armpit$Age, armpit$Corynebacterium.total,
          method = 'kendall',
          conf.level = 0.95)
 
+cor(armpit$Age, armpit$Corynebacterium.total, method = 'kendall')
+
+Kendall.perm.test <- function (x, y){
+  nsim <- 10000
+  res <- numeric(nsim) #Empty vector with length of simulations
+  for (i in 1:nsim) {
+    perm <- sample(x)  #Permutation
+    res[i] <- cor(perm, y, method = 'kendall') #Correlation in permutated dataset
+  }
+  obs <-  cor(x, y, method = 'kendall') #Observed correlation in original dataset
+  mean(abs(res)>=abs(obs)) #Proportion of permutations with equal or more extreme difference than the observed difference 
+}
+
+Kendall.perm.test(armpit$Age, armpit$Corynebacterium.total)
+
 tau_cor_conf(armpit, "Age", "Corynebacterium.total")
 
 plot_hexplot_age_cory <- ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +

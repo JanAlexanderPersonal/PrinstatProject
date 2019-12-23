@@ -78,7 +78,7 @@ AgeDist <- ggplot(data = armpit, aes(x = Age)) +
   scale_y_continuous(breaks = seq(0, 10, 2))+
   labs(x='Subject age [years]', 
        y='\\# Subjects') +
-  theme(axis.title=element_text(size=14)) 
+  theme(axis.title=element_text(size=11)) 
 
 # Export table with basic statistics age distribution for report
 stargazer(armpit %>% select(Age) %>% summarize(min = min(Age, na.rm = TRUE),
@@ -170,8 +170,8 @@ Boxplot_bacteria <- ggplot(bacteria_armpit, aes(x = Bacteria, y = Abundance)) +
        y="Relative bacteria abundance (\\%)") +
   guides(color = guide_legend(reverse = FALSE), 
          shape = guide_legend(title = "Mean")) +
-  theme(axis.title=element_text(size=16), 
-        axis.text.y = element_text(size = 14)) 
+  theme(axis.title=element_text(size=13), 
+        axis.text.y = element_text(size = 11)) 
 
 tikz(file = 'plot_Boxplot_species.tex', standAlone = FALSE, width = figure.width * 2, height = figure.height)
   Boxplot_bacteria
@@ -201,10 +201,10 @@ plot_Age <-armpit %>% ggplot(aes(x=Agecat, y=Corynebacterium.total)) +
   geom_boxplot(outlier.alpha = 0)+
   geom_point(position = position_jitter(width = 0.25), aes(shape = Agecat)) + 
   stat_summary(fun.y = mean, aes(shape = Agecat) ,geom="point",color = 'darkgray', size=3, position = position_dodge(width = 0.1)) + 
-  theme(legend.position = "none", axis.title=element_text(size=14)) + 
+  theme(legend.position = "none", axis.title=element_text(size=11)) + 
   ylab('Relative abundance \n of Corynebacterium genus [\\%]') + 
   xlab('Age category') + 
-  theme(axis.title=element_text(size=16))
+  theme(axis.title=element_text(size=13))
 
 # Summary table per age category
 tableAgeCat <- armpit %>%
@@ -389,7 +389,7 @@ plot_Fisher_exact <- Fisher_exact_or %>%
         axis.text.x = element_text(angle=45, hjust = 1,vjust=1,size = 14),
         plot.title = element_text(size=16),
         axis.text.y = element_text(size = 14)) + 
-  # ggtitle("Fisher-exact: Odds Ratio") +
+  ggtitle("Fisher-exact: Odds Ratio") +
   theme(legend.position = 'none') + 
   scale_x_discrete(name="") +
   scale_y_discrete(name="") +

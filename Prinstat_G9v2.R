@@ -415,7 +415,7 @@ armpit %>%
 wmwTest(Corynebacterium.total ~ BMI, data = armpit, alternative = "two.sided")
 wmwTest(Corynebacterium.total ~ Gender, data = armpit, alternative = "two.sided")
 
-combAgeCat <- CI_combAgeCat <- list()
+combAgeCat <- list()
 
 combAgeCat[['BMI > 25']] <- wmwTest(Corynebacterium.total ~ Agecat, 
                                     data = armpit[armpit$BMI == 'BMI > 25', ])
@@ -426,10 +426,12 @@ combAgeCat[['M']] <- wmwTest(Corynebacterium.total ~ Agecat,
 combAgeCat[['F']] <- wmwTest(Corynebacterium.total ~ Agecat, 
                              data = armpit[armpit$Gender == 'F', ])
 
+CI_combAgeCat <- data.frame()
 for(name in c('BMI > 25', 'BMI <= 25', 'M', 'F')){
-  CI_combAgeCat[[name]] <- combAgeCat[[name]]$conf.int[1:2]
+  CI_combAgeCat[name, 1:2] <- combAgeCat[[name]]$conf.int[1:2]
 }
 
+stargazer(CI_combAgeCat, summary = FALSE, out = 'table_WMWcomb_CI.tex', rownames = TRUE)
 
 # Relative abundance genus change with age, strategy 2: Age as a continuous variable ####
 
@@ -471,7 +473,7 @@ for(name in c('BMI > 25', 'BMI <= 25', 'M', 'F')){
   CI_combAgeCat[name, 2] <- combAgeCat[[name]]$conf_upper
 }
 
-CI_combAgeCat
+stargazer(CI_combAgeCat, summary = FALSE, out = 'table_taucomb_CI.tex', rownames = TRUE)
 
 plot_scatterplot_age_cory <- ggplot(armpit, aes(x = Age, y = Corynebacterium.total)) +
   geom_point(aes(color = Gender, shape= BMI), size = 3) +
